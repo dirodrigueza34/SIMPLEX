@@ -2,8 +2,6 @@
 include "conexion.php";
 
 $mensaje = "";
-
-
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accion']) && $_POST['accion'] == 'guardar') {
     $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
     $stock = isset($_POST['stock']) ? trim($_POST['stock']) : '';
@@ -162,3 +160,4 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
 
 </body>
 </html>
+
