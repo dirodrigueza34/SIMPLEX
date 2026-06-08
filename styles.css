@@ -1,0 +1,122 @@
+/* Ajustes generales del sistema */
+body {
+    background-color: #7bc4e7; /* Fondo celeste corporativo */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Contenedor blanco con bordes redondeados y sombra suave */
+.content-box {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    max-width: 90%;
+    margin: 40px auto;
+    padding: 30px;
+}
+
+h2 {
+    color: #000000;
+    font-size: 24px;
+    font-weight: bold;
+    margin-top: 0;
+}
+
+p {
+    color: #555;
+    font-size: 14px;
+}
+
+/* Estilos de Tablas (Estilo Cliente) */
+.tabla-datos {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+    font-size: 14px;
+}
+
+.tabla-datos th, .tabla-datos td {
+    border: 1px solid #dbdbdb;
+    padding: 12px 15px;
+    text-align: left;
+}
+
+.tabla-datos th {
+    background-color: #002b5c; /* Azul oscuro institucional */
+    color: white;
+    font-weight: 600;
+}
+
+.tabla-datos tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* Botones y enlaces de acción */
+.btn-primary {
+    background-color: #002b5c;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    background-color: #001f42;
+}
+
+.link-accion {
+    color: #002b5c;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.link-accion:hover {
+    text-decoration: underline;
+}
+
+/* Alertas de Validación para el Plan de Pruebas */
+.alert {
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+}
+.alert-success {
+    background-color: #e2f0d9;
+    color: #385723;
+    border: 1px solid #bcd6b3;
+}
+.alert-error {
+    background-color: #fce4d6;
+    color: #c65911;
+    border: 1px solid #f2bda2;
+}
+
+/* Formularios */
+.form-group {
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    max-width: 400px;
+}
+
+.form-group label {
+    font-weight: bold;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.form-group input, .form-group select {
+    padding: 10px;
+    border: 1px solid #cccccc;
+    border-radius: 4px;
+    font-size: 14px;
+}
