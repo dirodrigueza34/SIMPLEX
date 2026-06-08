@@ -28,10 +28,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $mensaje = "<div class='alert alert-error'>Prueba Fallida: El precio de venta debe ser un número decimal mayor a cero.</div>";
     } 
     else {
-        // Validación superada: Inserción limpia e inocua contra inyecciones SQL básicas
+        
         $nombreEscapado = $conexion->real_escape_string($nombre);
         
-        // Se autocompletan los campos extras de tu phpMyAdmin (descripcion y precio_compra) con valores base
+       
         $sql = "INSERT INTO producto (nombre, stock, precio_venta, id_categoria, descripcion, precio_compra) 
                 VALUES ('$nombreEscapado', '$stock', '$precio_venta', '$id_categoria', 'Producto de inventario', 0.00)";
         
@@ -43,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-// Obtener las categorías reales de tu phpMyAdmin para llenar el select dinámicamente
+
 $categoriasQuery = $conexion->query("SELECT * FROM categorias");
 ?>
 <!DOCTYPE html>
