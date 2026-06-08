@@ -31,7 +31,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accion']) && $_POST['a
         $proximoId = intval($proximoIdRow['max_id']) + 1;
         $codigoGenerado = "P00" . $proximoId;
 
-      
+       
         $sqlInsertar = "INSERT INTO producto (codigo, nombre, precio, stock, id_categoria) 
                         VALUES ('$codigoGenerado', '$nombreEsc', '$precio_venta', '$stock', '$id_categoria')";
         
@@ -58,7 +58,7 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
 </head>
 <body>
 
-  
+   
     <nav class="navbar">
         <span class="nav-welcome">Módulo de Productos (Inventario)</span>
         <div class="nav-links">
@@ -77,7 +77,7 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
         
         <?php echo $mensaje; ?>
 
-   
+       
         <form action="productos.php" method="POST" class="form-inline-row">
             <input type="hidden" name="accion" value="guardar">
             
@@ -142,7 +142,8 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
                         echo "<td>" . $fila['id_producto'] . "</td>";
                         echo "<td>" . htmlspecialchars($fila['codigo']) . "</td>"; 
                         echo "<td>" . htmlspecialchars($fila['nombre']) . "</td>";
-                        echo "<td>$" . number_format($fila['precio'], 2, ',', '.') . "</td>"; 
+                        
+                        echo "<td>$" . number_format($fila['precio'], 1) . "</td>"; 
                         echo "<td>" . $fila['stock'] . "</td>";
                         echo "<td>" . $fila['id_categoria'] . "</td>";
                         echo "<td>
