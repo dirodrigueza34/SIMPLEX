@@ -3,7 +3,7 @@ include "conexion.php";
 
 $mensaje = "";
 
-// 1. LÓGICA DE INSERCIÓN CON VALIDACIONES ESTRICTAS (Para tus pruebas en PHP)
+
 if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accion']) && $_POST['accion'] == 'guardar') {
     $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : '';
     $stock = isset($_POST['stock']) ? trim($_POST['stock']) : '';
@@ -20,12 +20,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accion']) && $_POST['a
         $mensaje = "<div class='alert alert-error'>Prueba Fallida: El stock debe ser un entero positivo.</div>";
     }
     elseif (!filter_var($precio_venta, FILTER_VALIDATE_FLOAT) || (float)$precio_venta <= 0) {
-        $mensaje = "<div class='alert alert-error'>Prueba Fallida: El precio debe ser decimal mayor a cero.</div>";
+        $mensaje = "<div class='alert alert-error'>Prueba Fallida: El precio debe ser un número decimal mayor a cero.</div>";
     } 
     else {
         $nombreEsc = $conexion->real_escape_string($nombre);
-        $sqlInsertar = "INSERT INTO producto (nombre, stock, precio_venta, id_categoria, descripcion, precio_compra) 
-                        VALUES ('$nombreEsc', '$stock', '$precio_venta', '$id_categoria', 'Producto de inventario PHP', 0.00)";
+        
+       
+        $proximoIdQuery = $conexion->query("SELECT MAX(id_producto) as max_id FROM producto");
+        $proximoIdRow = $proximoIdQuery->fetch_assoc();
+        $proximoId = intval($proximoIdRow['max_id']) + 1;
+        $codigoGenerado = "P00" . $proximoId;
+
+      
+        $sqlInsertar = "INSERT INTO producto (codigo, nombre, precio, stock, id_categoria) 
+                        VALUES ('$codigoGenerado', '$nombreEsc', '$precio_venta', '$stock', '$id_categoria')";
         
         if ($conexion->query($sqlInsertar) === TRUE) {
             $mensaje = "<div class='alert alert-success'>Prueba Exitosa: Producto registrado correctamente en MySQL.</div>";
@@ -36,10 +44,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['accion']) && $_POST['a
 }
 
 
-$sqlProductos = "SELECT p.*, c.nombre AS nombre_categoria 
-                 FROM producto p 
-                 LEFT JOIN categorias c ON p.id_categoria = c.id_categoria 
-                 ORDER BY p.id_producto DESC";
+$sqlProductos = "SELECT * FROM producto ORDER BY id_producto DESC";
 $resultado = $conexion->query($sqlProductos);
 
 $categoriasQuery = $conexion->query("SELECT * FROM categorias");
@@ -53,14 +58,14 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
 </head>
 <body>
 
-   
+  
     <nav class="navbar">
         <span class="nav-welcome">Módulo de Productos (Inventario)</span>
         <div class="nav-links">
             <a href="index.php">Inicio</a>
             <a href="productos.php">Productos</a>
-            <a href="clientes.php">Clientes</a>
             <a href="categorias.php">Categorías</a>
+            <a href="clientes.php">Clientes</a>
             <a href="ventas.php">Ventas</a>
             <a href="proveedor.php">Proveedores</a>
             <a href="movimientos_contables.php">Reportes</a>
@@ -72,7 +77,7 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
         
         <?php echo $mensaje; ?>
 
-        
+   
         <form action="productos.php" method="POST" class="form-inline-row">
             <input type="hidden" name="accion" value="guardar">
             
@@ -83,7 +88,7 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
 
             <div class="form-group-inline">
                 <label for="nombre">Nombre / Descripción:</label>
-                <input type="text" id="nombre" name="nombre" placeholder="Ej: Arroz" class="input-medium" required>
+                <input type="text" id="nombre" name="nombre" placeholder="Ej: Arroz 1kg" class="input-medium" required>
             </div>
 
             <div class="form-group-inline">
@@ -102,7 +107,6 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
                     <option value="">-- Elige --</option>
                     <?php
                     if ($categoriasQuery && $categoriasQuery->num_rows > 0) {
-                      
                         $categoriasQuery->data_seek(0);
                         while($cat = $categoriasQuery->fetch_assoc()) {
                             echo "<option value='".$cat['id_categoria']."'>".$cat['id_categoria']." - ".$cat['nombre']."</option>";
@@ -117,7 +121,7 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
 
         <h3>Lista de Productos Registrados</h3>
         
-   
+       
         <table class="tabla-datos">
             <thead>
                 <tr>
@@ -136,9 +140,9 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
                     while($fila = $resultado->fetch_assoc()) {
                         echo "<tr>";
                         echo "<td>" . $fila['id_producto'] . "</td>";
-                        echo "<td>P00" . $fila['id_producto'] . "</td>"; // Genera el código visual dinámico
+                        echo "<td>" . htmlspecialchars($fila['codigo']) . "</td>"; 
                         echo "<td>" . htmlspecialchars($fila['nombre']) . "</td>";
-                        echo "<td>$" . number_format($fila['precio_venta'], 1) . "</td>";
+                        echo "<td>$" . number_format($fila['precio'], 2, ',', '.') . "</td>"; 
                         echo "<td>" . $fila['stock'] . "</td>";
                         echo "<td>" . $fila['id_categoria'] . "</td>";
                         echo "<td>
