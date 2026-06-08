@@ -88,7 +88,7 @@ if (isset($_GET['error']) && $_GET['error'] == 'invalido') {
         <div class="card-login">
             <h2>Iniciar Sesión</h2>
             
-            <!-- Redirecciona al procesador lógico de credenciales -->
+          
             <form action="login_proceso.php" method="POST">
                 <div class="form-group-login">
                     <label for="usuario">Usuario:</label>
