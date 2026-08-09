@@ -136,3 +136,4 @@ $resultado = $conexion->query($sqlHistorial);
 
 </body>
 </html>
+
