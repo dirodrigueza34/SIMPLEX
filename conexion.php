@@ -1,14 +1,13 @@
 <?php
-// Módulo 4: Comunicación y API - Conexión de red segura hacia la nube
+// Módulo 4: Comunicación y API - Dirección completa del host de producción
 $host = "://aivencloud.com";
 $puerto = 28084;
 $usuario = "avnadmin";
 $base_datos = "defaultdb";
 
-// Lee de forma invisible la contraseña desde el panel de entorno del servidor Render
+// Sigue leyendo la contraseña de forma segura desde las variables de Render
 $pasword = getenv('DB_PASSWORD');
 
-// Inicialización de la API orientada a objetos mysqli
 $conexion = new mysqli($host, $usuario, $pasword, $base_datos, $puerto);
 
 if ($conexion->connect_error) {
@@ -17,6 +16,7 @@ if ($conexion->connect_error) {
 
 $conexion->set_charset("utf8");
 ?>
+
 
 
 
