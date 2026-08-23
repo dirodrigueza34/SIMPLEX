@@ -31,6 +31,21 @@ class ConectorUniversal {
                 'telefono' => '3009876543', 'direccion' => 'Zona Industrial Cali'
             ]];
         } 
+        // CONDICIONAL ESPECÍFICO PARA EL MÓDULO DE CATEGORÍAS
+        elseif (strpos($sql, 'categoria') !== false) {
+            $datos = [
+                ['id_categoria' => 1, 'nombre' => 'Granos', 'descripcion' => 'Productos de granos y cereales'],
+                ['id_categoria' => 2, 'nombre' => 'Licores', 'descripcion' => 'Bebidas alcohólicas'],
+                ['id_categoria' => 3, 'nombre' => 'Aseo y Hogar', 'descripcion' => 'Productos de limpieza para la tienda'],
+                ['id_categoria' => 4, 'nombre' => 'Lacteos', 'descripcion' => 'Productos derivados de la leche'],
+                ['id_categoria' => 5, 'nombre' => 'Carnes y Pescados', 'descripcion' => 'Productos cárnicos y del mar'],
+                ['id_categoria' => 6, 'nombre' => 'Panadería y Pastelería', 'descripcion' => 'Productos horneados y dulces'],
+                ['id_categoria' => 7, 'nombre' => 'Bebidas No Alcohólicas', 'descripcion' => 'Refrescos, jugos y aguas'],
+                ['id_categoria' => 8, 'nombre' => 'Snacks y Botanas', 'descripcion' => 'Aperitivos y golosinas'],
+                ['id_categoria' => 9, 'nombre' => 'Congelados', 'descripcion' => 'Alimentos congelados para la venta']
+            ];
+        }
+
         // 3. CONDICIONAL PARA EL MÓDULO DE PRODUCTOS
         elseif (strpos($sql, 'producto') !== false) {
             $datos = [[
