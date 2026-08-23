@@ -23,14 +23,18 @@ class ConectorUniversal {
                 'valor' => 450000.00, 'ingresos' => 450000.00, 'egresos' => 0.00
             ]];
         } 
-        // 2. CONDICIONAL PARA EL MÓDULO DE PROVEEDORES
+        // CONDICIONAL ESPECÍFICO PARA EL MÓDULO DE PROVEEDORES
         elseif (strpos($sql, 'proveedor') !== false) {
-            $datos = [[
-                'id_proveedor' => 1, 'nit' => '900123456-1', 
-                'nombre' => 'Distribuidora Muebles del Valle', 
-                'telefono' => '3009876543', 'direccion' => 'Zona Industrial Cali'
-            ]];
-        } 
+            $datos = [
+                ['id_proveedor' => 1, 'nit' => '900111222-1', 'nombre' => 'Distribuidora ABC', 'telefono' => '3001234567', 'direccion' => 'Zona Comercial Central'],
+                ['id_proveedor' => 2, 'nit' => '900333444-2', 'nombre' => 'Proveedor XYZ', 'telefono' => '3109876543', 'direccion' => 'Avenida Principal #40'],
+                ['id_proveedor' => 4, 'nit' => '860003020-1', 'nombre' => 'Alpina', 'telefono' => '1235058', 'direccion' => 'Planta Industrial de Lácteos'],
+                ['id_proveedor' => 5, 'nit' => '890900608-9', 'nombre' => 'ALKOSTO', 'telefono' => '3175318215', 'direccion' => 'Hipermercado Principal'],
+                ['id_proveedor' => 6, 'nit' => '901222333-6', 'nombre' => 'Distribuidora de Alimentos del Valle', 'telefono' => '6024445566', 'direccion' => 'Zona Industrial Yumbo'],
+                ['id_proveedor' => 7, 'nit' => '901444555-7', 'nombre' => 'Distribuidora de Alimentos la Muñeca', 'telefono' => '6023332241', 'direccion' => 'Central de Abastos Local']
+            ];
+        }
+
         // CONDICIONAL ESPECÍFICO PARA EL MÓDULO DE CATEGORÍAS
         elseif (strpos($sql, 'categoria') !== false) {
             $datos = [

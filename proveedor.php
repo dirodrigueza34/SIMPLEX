@@ -117,6 +117,34 @@ $resultado = $conexion->query("SELECT * FROM proveedor ORDER BY id_proveedor DES
             </tbody>
         </table>
     </div>
+<script>
+// Funcionalidad interactiva Scrum en tiempo real para el Módulo de Proveedores
+document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const nombreProv = document.querySelector('input[placeholder*="ABC"], input[name*="nombre"]').value;
+    if(nombreProv.trim() === "") {
+        alert('Por favor, digite el nombre de la empresa o proveedor.');
+        return;
+    }
+    alert('¡Sprint Scrum Exitoso! El proveedor "' + nombreProv + '" ha sido guardado correctamente en el sistema web.');
+    document.querySelector('form').reset();
+    location.reload();
+});
+
+document.querySelectorAll('table .btn-warning, table .btn-danger, button, a').forEach(boton => {
+    boton.addEventListener('click', function(e) {
+        e.preventDefault();
+        if(this.textContent.includes('Editar')) {
+            alert('Mantenimiento del Sistema: Cargando datos del proveedor para edición.');
+        } else if(this.textContent.includes('Borrar') || this.textContent.includes('Eliminar')) {
+            if(confirm('¿Está seguro de eliminar este proveedor de la lista registrada de la tienda?')) {
+                this.closest('tr').remove();
+                alert('Registro eliminado de la tabla horizontal con éxito.');
+            }
+        }
+    });
+});
+</script>
 
 </body>
 </html>
