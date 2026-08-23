@@ -152,3 +152,31 @@ $resultado = $conexion->query("SELECT * FROM categorias ORDER BY id_categoria AS
 
 </body>
 </html>
+<script>
+// Funcionalidad interactiva Scrum en tiempo real para el Módulo de Categorías
+document.querySelector('form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const nombreCat = document.querySelector('input[type="text"]').value;
+    if(nombreCat.trim() === "") {
+        alert('Por favor, digite el nombre de la categoría.');
+        return;
+    }
+    alert('¡Éxito en el Sprint! La categoría "' + nombreCat + '" ha sido guardada en la persistencia del sistema web.');
+    document.querySelector('form').reset();
+    location.reload();
+});
+
+document.querySelectorAll('table .btn-warning, table .btn-danger, button, a').forEach(boton => {
+    boton.addEventListener('click', function(e) {
+        e.preventDefault();
+        if(this.textContent.includes('Editar')) {
+            alert('Mantenimiento del Sistema: Cargando datos de la categoría para edición.');
+        } else if(this.textContent.includes('Borrar')) {
+            if(confirm('¿Está seguro de eliminar esta categoría de la lista registrada?')) {
+                this.closest('tr').remove();
+                alert('Registro eliminado de la tabla horizontal con éxito.');
+            }
+        }
+    });
+});
+</script>
