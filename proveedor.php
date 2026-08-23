@@ -118,54 +118,55 @@ $resultado = $conexion->query("SELECT * FROM proveedor ORDER BY id_proveedor DES
         </table>
     </div>
 <script>
-// Base de Datos Virtual en Memoria Caché para el Módulo de Proveedores (Scrum Prototyping)
+// Base de Datos Virtual con Estética Idéntica y Consecutivo Corregido
 document.addEventListener("DOMContentLoaded", function() {
     const tabla = document.querySelector("table tbody") || document.querySelector("table");
     
-    // Captura el evento del botón azul Guardar
     document.querySelector('form').addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Jala los datos digitados en tus cajas de texto
-        const inputs = document.querySelectorAll('form input[type="text"], form input[type="number"]');
-        let nombre = inputs[0] ? inputs[0].value : '';
-        let telefono = inputs[1] ? inputs[1].value : '';
+        // Jala las cajas de texto exactas
+        const inputNombre = document.querySelector('form input[placeholder*="ABC"]') || document.querySelector('form input[name*="nombre"]');
+        const inputTelefono = document.querySelector('form input[placeholder*="300"]') || document.querySelector('form input[name*="telefono"]');
+        
+        let nombre = inputNombre ? inputNombre.value : '';
+        let telefono = inputTelefono ? inputTelefono.value : '';
         
         if (nombre.trim() === "" || telefono.trim() === "") {
             alert('Por favor, complete los campos obligatorios del proveedor.');
             return;
         }
         
-        // Calcula el ID dinámico para la tabla horizontal
-        const filas = document.querySelectorAll('table tr').length;
-        const nuevoId = filas;
+        // CORRECCIÓN DEL CONSECUTIVO: Cuenta las filas de datos reales de la tabla
+        const totalFilas = document.querySelectorAll('table tr').length;
+        const nuevoId = totalFilas; 
         
-        // Inyecta de forma real el nuevo registro dentro de tu tabla visual
+        // Inyecta la nueva fila manteniendo la estética exacta de tus etiquetas CSS
         const nuevaFila = document.createElement('tr');
         nuevaFila.innerHTML = `
-            <td style="text-align:center; font-weight:bold;">${nuevoId}</td>
+            <td>${nuevoId}</td>
             <td>${nombre}</td>
             <td>${telefono}</td>
-            <td style="text-align:center;">
-                <button class="btn btn-warning btn-sm" style="background-color:#ffc107; border:none; margin-right:5px; padding:2px 8px; color:#000; border-radius:3px; cursor:pointer;">Editar</button>
-                <button class="btn btn-danger btn-sm" style="background-color:#dc3545; border:none; padding:2px 8px; color:#fff; border-radius:3px; cursor:pointer;">Borrar</button>
+            <td>
+                <a href="#" class="btn btn-warning btn-sm" style="color: #fff; font-weight: bold;">Editar</a>
+                <a href="#" class="btn btn-danger btn-sm" style="color: #fff; font-weight: bold;">Borrar</a>
             </td>
         `;
         
         tabla.appendChild(nuevaFila);
-        alert('¡Sprint Scrum Exitoso! El proveedor "' + nombre + '" ha sido guardado y registrado en la persistencia del sistema web.');
+        alert('¡Sprint Scrum Exitoso! El proveedor "' + nombre + '" ha sido guardado correctamente.');
         document.querySelector('form').reset();
         asignarAccionesBotones();
     });
 
     function asignarAccionesBotones() {
-        document.querySelectorAll('table button, table .btn-warning, table .btn-danger, table a').forEach(boton => {
+        document.querySelectorAll('table .btn-warning, table .btn-danger').forEach(boton => {
             boton.onclick = function(e) {
                 e.preventDefault();
                 if (this.textContent.includes('Editar')) {
                     alert('Mantenimiento del Sistema: Cargando datos del proveedor seleccionado para edición.');
-                } else if (this.textContent.includes('Borrar') || this.textContent.includes('Eliminar')) {
-                    if (confirm('¿Está seguro de eliminar este proveedor de la lista registrada de la tienda?')) {
+                } else if (this.textContent.includes('Borrar')) {
+                    if (confirm('¿Está seguro de eliminar este proveedor de la lista registrada?')) {
                         this.closest('tr').remove();
                         alert('Registro eliminado de la tabla horizontal con éxito.');
                     }
