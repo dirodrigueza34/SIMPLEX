@@ -149,9 +149,6 @@ $resultado = $conexion->query("SELECT * FROM categorias ORDER BY id_categoria AS
             </tbody>
         </table>
     </div>
-
-</body>
-</html>
 <script>
 // Funcionalidad interactiva Scrum en tiempo real para el Módulo de Categorías
 document.querySelector('form').addEventListener('submit', function(e) {
@@ -180,3 +177,8 @@ document.querySelectorAll('table .btn-warning, table .btn-danger, button, a').fo
     });
 });
 </script>
+
+
+
+</body>
+</html>
