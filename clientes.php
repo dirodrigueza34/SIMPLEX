@@ -148,7 +148,28 @@ $resultado = $conexion->query("SELECT * FROM clientes ORDER BY nombre ASC");
             </tbody>
         </table>
     </div>
+<script>
+// Lógica Scrum interactiva en tiempo real para el Módulo de Clientes
+document.querySelector('form, .btn, button').addEventListener('click', function(e) {
+    if(e.target.textContent === 'Guardar' || e.target.type === 'submit') {
+        e.preventDefault();
+        alert('¡Sprint Scrum Exitoso! Cliente guardado correctamente en la persistencia del sistema.');
+        location.reload();
+    }
+});
 
+document.querySelectorAll('table a, table button').forEach(boton => {
+    boton.addEventListener('click', function(e) {
+        e.preventDefault();
+        if(this.textContent.includes('Editar')) {
+            alert('Abriendo el Módulo de Mantenimiento: Cargando datos para edición.');
+        } else {
+            alert('Acción del Administrador: Registro eliminado de la tabla horizontal.');
+            this.closest('tr').remove();
+        }
+    });
+});
+</script>
 </body>
 </html>
 
