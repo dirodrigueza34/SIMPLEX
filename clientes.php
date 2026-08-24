@@ -149,7 +149,7 @@ $resultado = $conexion->query("SELECT * FROM clientes ORDER BY nombre ASC");
         </table>
     </div>
 <script>
-// Interceptor Perimetral de Clics para Edición Interactiva Scrum en Vivo
+// CRUD con Persistencia Permanente en Disco Virtual LocalStorage (Metodología Scrum)
 document.addEventListener("DOMContentLoaded", function() {
     const tabla = document.querySelector("table tbody") || document.querySelector(".tabla-datos tbody") || document.querySelector("table");
     const formulario = document.querySelector('form');
@@ -157,13 +157,54 @@ document.addEventListener("DOMContentLoaded", function() {
     
     let filaEditando = null;
 
+    // Carga los clientes guardados previamente al abrir la página
+    function cargarClientesLocales() {
+        const clientesGuardados = JSON.parse(localStorage.getItem('clientes_simplex')) || [];
+        clientesGuardados.forEach(cli => {
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td>${cli.id}</td>
+                <td>${cli.dni}</td>
+                <td>${cli.nombre}</td>
+                <td>${cli.telefono}</td>
+                <td>${cli.direccion}</td>
+                <td>
+                    <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
+                    <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
+                </td>
+            `;
+            tabla.appendChild(nuevaFila);
+        });
+        asignarAccionesBotones();
+    }
+
+    // Guarda la lista completa en el navegador
+    function guardarEnDiscoVirtual() {
+        const filas = tabla.querySelectorAll('tr');
+        const listaClientes = [];
+        
+        filas.forEach(fila => {
+            // Ignora el cliente por defecto de PHP si tiene ID 1
+            if(fila.cells[0].textContent !== "1" || listaClientes.length > 0) {
+                listaClientes.push({
+                    id: fila.cells[0].textContent,
+                    dni: fila.cells[1].textContent,
+                    nombre: fila.cells[2].textContent,
+                    telefono: fila.cells[3].textContent,
+                    direccion: fila.cells[4].textContent
+                });
+            }
+        });
+        localStorage.setItem('clientes_simplex', JSON.stringify(listaClientes));
+    }
+
     formulario.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]') || formulario.querySelectorAll('input')[1];
-        const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]') || formulario.querySelectorAll('input')[2];
-        const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]') || formulario.querySelectorAll('input')[3];
-        const txtDireccion = formulario.querySelector('input[name*="direccion"]') || formulario.querySelector('input[id*="direccion"]') || formulario.querySelectorAll('input')[4];
+        const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]') || formulario.querySelectorAll('input')[0];
+        const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]') || formulario.querySelectorAll('input')[1];
+        const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]') || formulario.querySelectorAll('input')[2];
+        const txtDireccion = formulario.querySelector('input[name*="direccion"]') || formulario.querySelector('input[id*="direccion"]') || formulario.querySelectorAll('input')[3];
         
         if (!txtNombre.value.trim() || !txtDni.value.trim()) {
             alert('Por favor, complete los campos obligatorios del cliente.');
@@ -171,18 +212,18 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         if (filaEditando) {
-            // ACCIÓN SCRUM: ACTUALIZAR LA FILA SELECCIONADA EN CALIENTE
+            // ACCIÓN: ACTUALIZAR EN CALIENTE
             filaEditando.cells[1].textContent = txtDni.value;
             filaEditando.cells[2].textContent = txtNombre.value;
             filaEditando.cells[3].textContent = txtTelefono.value;
             filaEditando.cells[4].textContent = txtDireccion.value;
             
-            alert('¡Sprint Scrum Exitoso! El cliente "' + txtNombre.value + '" ha sido actualizado en la lista.');
+            alert('¡Sprint Scrum Exitoso! El cliente ha sido actualizado.');
             botonGuardar.textContent = 'Guardar';
             botonGuardar.style.backgroundColor = ''; 
             filaEditando = null;
         } else {
-            // ACCIÓN SCRUM: INSERTAR UN NUEVO REGISTRO
+            // ACCIÓN: CREAR NUEVA FILA
             const totalFilas = document.querySelectorAll('table tr').length;
             const nuevoId = totalFilas;
             
@@ -194,64 +235,58 @@ document.addEventListener("DOMContentLoaded", function() {
                 <td>${txtTelefono.value}</td>
                 <td>${txtDireccion.value}</td>
                 <td>
-                    <a href="#" class="btn btn-warning btn-sm btn-action btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
-                    <a href="#" class="btn btn-danger btn-sm btn-action btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
+                    <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
+                    <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
                 </td>
             `;
             tabla.appendChild(nuevaFila);
-            alert('¡Sprint Scrum Exitoso! El cliente "' + txtNombre.value + '" ha sido guardado correctamente.');
+            alert('¡Sprint Scrum Exitoso! El cliente "' + txtNombre.value + '" ha sido guardado en la memoria.');
         }
         
+        guardarEnDiscoVirtual();
         formulario.reset();
         asignarAccionesBotones();
     });
 
     function asignarAccionesBotones() {
-        // CORRECCIÓN CLAVE: Intercepta y anula los enlaces rotos de Apache nativos de PHP
-        document.querySelectorAll('table a, table button, .btn-editar, .btn-borrar').forEach(boton => {
+        document.querySelectorAll('table .btn-editar, table .btn-warning').forEach(boton => {
             boton.onclick = function(e) {
-                // Detiene de golpe el salto de página hacia el error Not Found
                 e.preventDefault();
-                e.stopPropagation();
+                filaEditando = this.closest('tr');
                 
-                if (this.textContent.includes('Editar') || this.classList.contains('btn-editar')) {
-                    filaEditando = this.closest('tr');
-                    
-                    const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]') || formulario.querySelectorAll('input')[1];
-                    const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]') || formulario.querySelectorAll('input')[2];
-                    const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]') || formulario.querySelectorAll('input')[3];
-                    const txtDireccion = formulario.querySelector('input[name*="direccion"]') || formulario.querySelector('input[id*="direccion"]') || formulario.querySelectorAll('input')[4];
-                    
-                    // Jala los datos reales de las celdas de la tabla horizontal
-                    txtDni.value = filaEditando.cells[1].textContent.trim();
-                    txtNombre.value = filaEditando.cells[2].textContent.trim();
-                    txtTelefono.value = filaEditando.cells[3].textContent.trim();
-                    txtDireccion.value = filaEditando.cells[4].textContent.trim();
-                    
-                    botonGuardar.textContent = 'Actualizar Datos';
-                    botonGuardar.style.backgroundColor = '#ff9800';
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    alert('Modo Edición Activado: Los datos del cliente se cargaron arriba en las casillas. Modifíquelos y presione Actualizar.');
-                } else if (this.textContent.includes('Borrar') || this.classList.contains('btn-borrar')) {
-                    if (confirm('¿Está seguro de eliminar este cliente de la base de datos de la tienda?')) {
-                        this.closest('tr').remove();
-                        alert('Registro eliminado de la tabla horizontal con éxito.');
-                        formulario.reset();
-                        botonGuardar.textContent = 'Guardar';
-                        botonGuardar.style.backgroundColor = '';
-                        filaEditando = null;
-                    }
+                const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]');
+                const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]');
+                const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]');
+                const txtDireccion = formulario.querySelector('input[name*="direccion"]') || formulario.querySelector('input[id*="direccion"]');
+                
+                txtDni.value = filaEditando.cells[1].textContent.trim();
+                txtNombre.value = filaEditando.cells[2].textContent.trim();
+                txtTelefono.value = filaEditando.cells[3].textContent.trim();
+                txtDireccion.value = filaEditando.cells[4].textContent.trim();
+                
+                botonGuardar.textContent = 'Actualizar Datos';
+                botonGuardar.style.backgroundColor = '#ff9800';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+        });
+
+        document.querySelectorAll('table .btn-borrar, table .btn-danger').forEach(boton => {
+            boton.onclick = function(e) {
+                e.preventDefault();
+                if (confirm('¿Está seguro de eliminar este cliente?')) {
+                    this.closest('tr').remove();
+                    guardarEnDiscoVirtual();
+                    alert('Registro eliminado con éxito.');
+                    formulario.reset();
+                    botonGuardar.textContent = 'Guardar';
+                    botonGuardar.style.backgroundColor = '';
+                    filaEditando = null;
                 }
             };
         });
     }
-    
-    // Ejecución inicial automática y monitoreo del cuerpo de la tabla
-    asignarAccionesBotones();
-    if(tabla) {
-        const observer = new MutationObserver(asignarAccionesBotones);
-        observer.observe(tabla, { childList: true });
-    }
+
+    cargarClientesLocales();
 });
 </script>
 
