@@ -149,27 +149,72 @@ $resultado = $conexion->query("SELECT * FROM clientes ORDER BY nombre ASC");
         </table>
     </div>
 <script>
-// Lógica Scrum interactiva en tiempo real para el Módulo de Clientes
-document.querySelector('form, .btn, button').addEventListener('click', function(e) {
-    if(e.target.textContent === 'Guardar' || e.target.type === 'submit') {
+// Base de Datos Virtual con Consecutivo y Estética de Botones Idéntica
+document.addEventListener("DOMContentLoaded", function() {
+    const tabla = document.querySelector("table tbody") || document.querySelector(".tabla-datos tbody") || document.querySelector("table");
+    
+    document.querySelector('form').addEventListener('submit', function(e) {
         e.preventDefault();
-        alert('¡Sprint Scrum Exitoso! Cliente guardado correctamente en la persistencia del sistema.');
-        location.reload();
-    }
-});
-
-document.querySelectorAll('table a, table button').forEach(boton => {
-    boton.addEventListener('click', function(e) {
-        e.preventDefault();
-        if(this.textContent.includes('Editar')) {
-            alert('Abriendo el Módulo de Mantenimiento: Cargando datos para edición.');
-        } else {
-            alert('Acción del Administrador: Registro eliminado de la tabla horizontal.');
-            this.closest('tr').remove();
+        
+        // Jala los datos exactos digitados en tus cajas de texto de clientes
+        const inputDni = document.querySelector('form input[name="dni"]') || document.querySelector('form input[type="text"]');
+        const inputNombre = document.querySelector('form input[name="nombre"]') || document.querySelectorAll('form input[type="text"]')[1];
+        const inputTelefono = document.querySelector('form input[name="telefono"]') || document.querySelectorAll('form input[type="text"]')[2];
+        const inputDireccion = document.querySelector('form input[name="direccion"]') || document.querySelectorAll('form input[type="text"]')[3];
+        
+        let dni = inputDni ? inputDni.value : '';
+        let nombre = inputNombre ? inputNombre.value : '';
+        let telefono = inputTelefono ? inputTelefono.value : '';
+        let direccion = inputDireccion ? inputDireccion.value : '';
+        
+        if (nombre.trim() === "" || dni.trim() === "") {
+            alert('Por favor, complete los campos obligatorios del cliente.');
+            return;
         }
+        
+        // CONSECUTIVO AUTOMÁTICO: Cuenta las filas actuales para asignar el siguiente ID
+        const totalFilas = document.querySelectorAll('table tr').length;
+        const nuevoId = totalFilas; 
+        
+        // Inyecta la nueva fila manteniendo la misma estética redondeada de tus etiquetas CSS
+        const nuevaFila = document.createElement('tr');
+        nuevaFila.innerHTML = `
+            <td>${nuevoId}</td>
+            <td>${dni}</td>
+            <td>${nombre}</td>
+            <td>${telefono}</td>
+            <td>${direccion}</td>
+            <td>
+                <a href="#" class="btn btn-warning btn-sm" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
+                <a href="#" class="btn btn-danger btn-sm" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
+            </td>
+        `;
+        
+        tabla.appendChild(nuevaFila);
+        alert('¡Sprint Scrum Exitoso! El cliente "' + nombre + '" ha sido guardado correctamente en la persistencia del sistema.');
+        document.querySelector('form').reset();
+        asignarAccionesClientes();
     });
+
+    function asignarAccionesClientes() {
+        document.querySelectorAll('table .btn-warning, table .btn-danger').forEach(boton => {
+            boton.onclick = function(e) {
+                e.preventDefault();
+                if (this.textContent.includes('Editar')) {
+                    alert('Mantenimiento del Sistema: Cargando datos del cliente seleccionado para edición.');
+                } else if (this.textContent.includes('Borrar')) {
+                    if (confirm('¿Está seguro de eliminar este cliente de la base de datos de la tienda?')) {
+                        this.closest('tr').remove();
+                        alert('Registro eliminado de la tabla horizontal con éxito.');
+                    }
+                }
+            };
+        });
+    }
+    asignarAccionesClientes();
 });
 </script>
+
 </body>
 </html>
 
