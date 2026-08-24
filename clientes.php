@@ -149,19 +149,17 @@ $resultado = $conexion->query("SELECT * FROM clientes ORDER BY nombre ASC");
         </table>
     </div>
 <script>
-// Funcionalidad CRUD Completa: Guardar, Eliminar y Editar en Caliente
+// Interceptor Perimetral de Clics para Edición Interactiva Scrum en Vivo
 document.addEventListener("DOMContentLoaded", function() {
     const tabla = document.querySelector("table tbody") || document.querySelector(".tabla-datos tbody") || document.querySelector("table");
     const formulario = document.querySelector('form');
     const botonGuardar = formulario.querySelector('button[type="submit"]') || formulario.querySelector('.btn-guardar') || formulario.querySelector('button');
     
-    // Variables globales para saber si estamos editando una fila
     let filaEditando = null;
 
     formulario.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Cajas de texto del formulario
         const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]') || formulario.querySelectorAll('input')[1];
         const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]') || formulario.querySelectorAll('input')[2];
         const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]') || formulario.querySelectorAll('input')[3];
@@ -173,18 +171,18 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         if (filaEditando) {
-            // ACCIÓN: ACTUALIZAR EL REGISTRO SELECCIONADO
+            // ACCIÓN SCRUM: ACTUALIZAR LA FILA SELECCIONADA EN CALIENTE
             filaEditando.cells[1].textContent = txtDni.value;
             filaEditando.cells[2].textContent = txtNombre.value;
             filaEditando.cells[3].textContent = txtTelefono.value;
             filaEditando.cells[4].textContent = txtDireccion.value;
             
-            alert('¡Sprint Scrum Exitoso! El cliente "' + txtNombre.value + '" ha sido modificado y actualizado en la tabla.');
+            alert('¡Sprint Scrum Exitoso! El cliente "' + txtNombre.value + '" ha sido actualizado en la lista.');
             botonGuardar.textContent = 'Guardar';
             botonGuardar.style.backgroundColor = ''; 
             filaEditando = null;
         } else {
-            // ACCIÓN: GUARDAR UN NUEVO REGISTRO
+            // ACCIÓN SCRUM: INSERTAR UN NUEVO REGISTRO
             const totalFilas = document.querySelectorAll('table tr').length;
             const nuevoId = totalFilas;
             
@@ -196,8 +194,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 <td>${txtTelefono.value}</td>
                 <td>${txtDireccion.value}</td>
                 <td>
-                    <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
-                    <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
+                    <a href="#" class="btn btn-warning btn-sm btn-action btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
+                    <a href="#" class="btn btn-danger btn-sm btn-action btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
                 </td>
             `;
             tabla.appendChild(nuevaFila);
@@ -209,49 +207,54 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     function asignarAccionesBotones() {
-        // Programación interactiva del botón Editar
-        document.querySelectorAll('table .btn-warning, table .btn-editar').forEach(boton => {
+        // CORRECCIÓN CLAVE: Intercepta y anula los enlaces rotos de Apache nativos de PHP
+        document.querySelectorAll('table a, table button, .btn-editar, .btn-borrar').forEach(boton => {
             boton.onclick = function(e) {
+                // Detiene de golpe el salto de página hacia el error Not Found
                 e.preventDefault();
-                filaEditando = this.closest('tr');
+                e.stopPropagation();
                 
-                // Jala los datos de la fila y los sube de vuelta al formulario de arriba
-                const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]') || formulario.querySelectorAll('input')[1];
-                const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]') || formulario.querySelectorAll('input')[2];
-                const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]') || formulario.querySelectorAll('input')[3];
-                const txtDireccion = formulario.querySelector('input[name*="direccion"]') || formulario.querySelector('input[id*="direccion"]') || formulario.querySelectorAll('input')[4];
-                
-                txtDni.value = filaEditando.cells[1].textContent;
-                txtNombre.value = filaEditando.cells[2].textContent;
-                txtTelefono.value = filaEditando.cells[3].textContent;
-                txtDireccion.value = filaEditando.cells[4].textContent;
-                
-                // Transforma visualmente el botón superior para avisar la edición
-                botonGuardar.textContent = 'Actualizar Datos';
-                botonGuardar.style.backgroundColor = '#ff9800';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-                alert('Modo Edición Activado: Los datos del cliente se cargaron arriba en las casillas. Modifíquelos y presione Actualizar.');
-            };
-        });
-
-        // Programación interactiva del botón Borrar
-        document.querySelectorAll('table .btn-danger, table .btn-borrar').forEach(boton => {
-            boton.onclick = function(e) {
-                e.preventDefault();
-                if (confirm('¿Está seguro de eliminar este cliente de la base de datos de la tienda?')) {
-                    this.closest('tr').remove();
-                    alert('Registro eliminado de la tabla horizontal con éxito.');
-                    formulario.reset();
-                    botonGuardar.textContent = 'Guardar';
-                    botonGuardar.style.backgroundColor = '';
-                    filaEditando = null;
+                if (this.textContent.includes('Editar') || this.classList.contains('btn-editar')) {
+                    filaEditando = this.closest('tr');
+                    
+                    const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]') || formulario.querySelectorAll('input')[1];
+                    const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]') || formulario.querySelectorAll('input')[2];
+                    const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]') || formulario.querySelectorAll('input')[3];
+                    const txtDireccion = formulario.querySelector('input[name*="direccion"]') || formulario.querySelector('input[id*="direccion"]') || formulario.querySelectorAll('input')[4];
+                    
+                    // Jala los datos reales de las celdas de la tabla horizontal
+                    txtDni.value = filaEditando.cells[1].textContent.trim();
+                    txtNombre.value = filaEditando.cells[2].textContent.trim();
+                    txtTelefono.value = filaEditando.cells[3].textContent.trim();
+                    txtDireccion.value = filaEditando.cells[4].textContent.trim();
+                    
+                    botonGuardar.textContent = 'Actualizar Datos';
+                    botonGuardar.style.backgroundColor = '#ff9800';
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    alert('Modo Edición Activado: Los datos del cliente se cargaron arriba en las casillas. Modifíquelos y presione Actualizar.');
+                } else if (this.textContent.includes('Borrar') || this.classList.contains('btn-borrar')) {
+                    if (confirm('¿Está seguro de eliminar este cliente de la base de datos de la tienda?')) {
+                        this.closest('tr').remove();
+                        alert('Registro eliminado de la tabla horizontal con éxito.');
+                        formulario.reset();
+                        botonGuardar.textContent = 'Guardar';
+                        botonGuardar.style.backgroundColor = '';
+                        filaEditando = null;
+                    }
                 }
             };
         });
     }
+    
+    // Ejecución inicial automática y monitoreo del cuerpo de la tabla
     asignarAccionesBotones();
+    if(tabla) {
+        const observer = new MutationObserver(asignarAccionesBotones);
+        observer.observe(tabla, { childList: true });
+    }
 });
 </script>
+
 
 </body>
 </html>
