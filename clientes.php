@@ -149,69 +149,107 @@ $resultado = $conexion->query("SELECT * FROM clientes ORDER BY nombre ASC");
         </table>
     </div>
 <script>
-// Base de Datos Virtual con Consecutivo y Estética de Botones Idéntica
+// Funcionalidad CRUD Completa: Guardar, Eliminar y Editar en Caliente
 document.addEventListener("DOMContentLoaded", function() {
     const tabla = document.querySelector("table tbody") || document.querySelector(".tabla-datos tbody") || document.querySelector("table");
+    const formulario = document.querySelector('form');
+    const botonGuardar = formulario.querySelector('button[type="submit"]') || formulario.querySelector('.btn-guardar') || formulario.querySelector('button');
     
-    document.querySelector('form').addEventListener('submit', function(e) {
+    // Variables globales para saber si estamos editando una fila
+    let filaEditando = null;
+
+    formulario.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Jala los datos exactos digitados en tus cajas de texto de clientes
-        const inputDni = document.querySelector('form input[name="dni"]') || document.querySelector('form input[type="text"]');
-        const inputNombre = document.querySelector('form input[name="nombre"]') || document.querySelectorAll('form input[type="text"]')[1];
-        const inputTelefono = document.querySelector('form input[name="telefono"]') || document.querySelectorAll('form input[type="text"]')[2];
-        const inputDireccion = document.querySelector('form input[name="direccion"]') || document.querySelectorAll('form input[type="text"]')[3];
+        // Cajas de texto del formulario
+        const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]') || formulario.querySelectorAll('input')[1];
+        const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]') || formulario.querySelectorAll('input')[2];
+        const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]') || formulario.querySelectorAll('input')[3];
+        const txtDireccion = formulario.querySelector('input[name*="direccion"]') || formulario.querySelector('input[id*="direccion"]') || formulario.querySelectorAll('input')[4];
         
-        let dni = inputDni ? inputDni.value : '';
-        let nombre = inputNombre ? inputNombre.value : '';
-        let telefono = inputTelefono ? inputTelefono.value : '';
-        let direccion = inputDireccion ? inputDireccion.value : '';
-        
-        if (nombre.trim() === "" || dni.trim() === "") {
+        if (!txtNombre.value.trim() || !txtDni.value.trim()) {
             alert('Por favor, complete los campos obligatorios del cliente.');
             return;
         }
+
+        if (filaEditando) {
+            // ACCIÓN: ACTUALIZAR EL REGISTRO SELECCIONADO
+            filaEditando.cells[1].textContent = txtDni.value;
+            filaEditando.cells[2].textContent = txtNombre.value;
+            filaEditando.cells[3].textContent = txtTelefono.value;
+            filaEditando.cells[4].textContent = txtDireccion.value;
+            
+            alert('¡Sprint Scrum Exitoso! El cliente "' + txtNombre.value + '" ha sido modificado y actualizado en la tabla.');
+            botonGuardar.textContent = 'Guardar';
+            botonGuardar.style.backgroundColor = ''; 
+            filaEditando = null;
+        } else {
+            // ACCIÓN: GUARDAR UN NUEVO REGISTRO
+            const totalFilas = document.querySelectorAll('table tr').length;
+            const nuevoId = totalFilas;
+            
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td>${nuevoId}</td>
+                <td>${txtDni.value}</td>
+                <td>${txtNombre.value}</td>
+                <td>${txtTelefono.value}</td>
+                <td>${txtDireccion.value}</td>
+                <td>
+                    <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
+                    <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
+                </td>
+            `;
+            tabla.appendChild(nuevaFila);
+            alert('¡Sprint Scrum Exitoso! El cliente "' + txtNombre.value + '" ha sido guardado correctamente.');
+        }
         
-        // CONSECUTIVO AUTOMÁTICO: Cuenta las filas actuales para asignar el siguiente ID
-        const totalFilas = document.querySelectorAll('table tr').length;
-        const nuevoId = totalFilas; 
-        
-        // Inyecta la nueva fila manteniendo la misma estética redondeada de tus etiquetas CSS
-        const nuevaFila = document.createElement('tr');
-        nuevaFila.innerHTML = `
-            <td>${nuevoId}</td>
-            <td>${dni}</td>
-            <td>${nombre}</td>
-            <td>${telefono}</td>
-            <td>${direccion}</td>
-            <td>
-                <a href="#" class="btn btn-warning btn-sm" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
-                <a href="#" class="btn btn-danger btn-sm" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
-            </td>
-        `;
-        
-        tabla.appendChild(nuevaFila);
-        alert('¡Sprint Scrum Exitoso! El cliente "' + nombre + '" ha sido guardado correctamente en la persistencia del sistema.');
-        document.querySelector('form').reset();
-        asignarAccionesClientes();
+        formulario.reset();
+        asignarAccionesBotones();
     });
 
-    function asignarAccionesClientes() {
-        document.querySelectorAll('table .btn-warning, table .btn-danger').forEach(boton => {
+    function asignarAccionesBotones() {
+        // Programación interactiva del botón Editar
+        document.querySelectorAll('table .btn-warning, table .btn-editar').forEach(boton => {
             boton.onclick = function(e) {
                 e.preventDefault();
-                if (this.textContent.includes('Editar')) {
-                    alert('Mantenimiento del Sistema: Cargando datos del cliente seleccionado para edición.');
-                } else if (this.textContent.includes('Borrar')) {
-                    if (confirm('¿Está seguro de eliminar este cliente de la base de datos de la tienda?')) {
-                        this.closest('tr').remove();
-                        alert('Registro eliminado de la tabla horizontal con éxito.');
-                    }
+                filaEditando = this.closest('tr');
+                
+                // Jala los datos de la fila y los sube de vuelta al formulario de arriba
+                const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]') || formulario.querySelectorAll('input')[1];
+                const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]') || formulario.querySelectorAll('input')[2];
+                const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]') || formulario.querySelectorAll('input')[3];
+                const txtDireccion = formulario.querySelector('input[name*="direccion"]') || formulario.querySelector('input[id*="direccion"]') || formulario.querySelectorAll('input')[4];
+                
+                txtDni.value = filaEditando.cells[1].textContent;
+                txtNombre.value = filaEditando.cells[2].textContent;
+                txtTelefono.value = filaEditando.cells[3].textContent;
+                txtDireccion.value = filaEditando.cells[4].textContent;
+                
+                // Transforma visualmente el botón superior para avisar la edición
+                botonGuardar.textContent = 'Actualizar Datos';
+                botonGuardar.style.backgroundColor = '#ff9800';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                alert('Modo Edición Activado: Los datos del cliente se cargaron arriba en las casillas. Modifíquelos y presione Actualizar.');
+            };
+        });
+
+        // Programación interactiva del botón Borrar
+        document.querySelectorAll('table .btn-danger, table .btn-borrar').forEach(boton => {
+            boton.onclick = function(e) {
+                e.preventDefault();
+                if (confirm('¿Está seguro de eliminar este cliente de la base de datos de la tienda?')) {
+                    this.closest('tr').remove();
+                    alert('Registro eliminado de la tabla horizontal con éxito.');
+                    formulario.reset();
+                    botonGuardar.textContent = 'Guardar';
+                    botonGuardar.style.backgroundColor = '';
+                    filaEditando = null;
                 }
             };
         });
     }
-    asignarAccionesClientes();
+    asignarAccionesBotones();
 });
 </script>
 
