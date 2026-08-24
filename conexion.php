@@ -50,13 +50,17 @@ class ConectorUniversal {
             ];
         }
 
-        // 3. CONDICIONAL PARA EL MÓDULO DE PRODUCTOS
+        // Soporte para la consulta SELECT MAX(id_producto) de tu línea 24
+        if (strpos($sql, 'max(id_producto)') !== false) {
+            $datos = [['max_id' => 3]];
+        }
+        // 1. CONDICIONAL SINCRO PARA EL MÓDULO DE PRODUCTOS (INVENTARIO)
         elseif (strpos($sql, 'producto') !== false) {
-            $datos = [[
-                'id_producto' => 1, 'codigo' => 'P001', 
-                'nombre' => 'Sofá Modular Los Prados', 'precio' => 1200000, 
-                'stock' => 5, 'categoria' => 'Salas'
-            ]];
+            $datos = [
+                ['id_producto' => 1, 'codigo' => 'P001', 'nombre' => 'Arroz Diana 1kg', 'precio' => 4200.00, 'stock' => 50, 'id_categoria' => 1],
+                ['id_producto' => 2, 'codigo' => 'P002', 'nombre' => 'Aceite Premier 1L', 'precio' => 11500.00, 'stock' => 24, 'id_categoria' => 4],
+                ['id_producto' => 3, 'codigo' => 'P003', 'nombre' => 'Leche Alquería 1L', 'precio' => 4500.00, 'stock' => 30, 'id_categoria' => 4]
+            ];
         } 
         // 4. CONDICIONAL PARA EL MÓDULO DE CLIENTES
         elseif (strpos($sql, 'cliente') !== false) {

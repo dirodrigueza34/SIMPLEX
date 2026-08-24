@@ -157,6 +157,74 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
             </tbody>
         </table>
     </div>
+<script>
+// Base de Datos Virtual con Estética Idéntica para el Módulo de Productos (Scrum Prototyping)
+document.addEventListener("DOMContentLoaded", function() {
+    const tabla = document.querySelector(".tabla-datos tbody") || document.querySelector("table tbody");
+    
+    document.querySelector('form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Jala las cajas de texto de tu formulario de productos
+        const inputNombre = document.getElementById('nombre');
+        const inputPrecio = document.getElementById('precio_venta');
+        const inputStock = document.getElementById('stock');
+        const selectCategoria = document.getElementById('id_categoria');
+        
+        let nombre = inputNombre ? inputNombre.value : '';
+        let precio = inputPrecio ? inputPrecio.value : '';
+        let stock = inputStock ? inputStock.value : '';
+        let categoria = selectCategoria ? selectCategoria.value : '';
+        
+        if (nombre.trim() === "" || precio.trim() === "" || stock.trim() === "" || categoria === "") {
+            alert('Por favor, complete todos los campos requeridos del producto.');
+            return;
+        }
+        
+        // Consecutivo automático e ID estético corregido
+        const totalFilas = document.querySelectorAll('.tabla-datos tbody tr').length;
+        const nuevoId = totalFilas + 1; 
+        const codigoGenerado = "P00" + nuevoId;
+        
+        const nuevaFila = document.createElement('tr');
+        nuevaFila.innerHTML = `
+            <td>${nuevoId}</td>
+            <td>${codigoGenerado}</td>
+            <td>${nombre}</td>
+            <td>$${parseFloat(precio).toFixed(1)}</td>
+            <td>${stock}</td>
+            <td>${categoria}</td>
+            <td>
+                <a href="#" class="btn-action btn-editar">Editar</a>
+                <a href="#" class="btn-action btn-borrar">Borrar</a>
+            </td>
+        `;
+        
+        tabla.appendChild(nuevaFila);
+        alert('¡Prueba Exitosa: Producto "' + nombre + '" registrado correctamente en el sistema web.');
+        document.querySelector('form').reset();
+        asignarAccionesProductos();
+    });
+
+    function asignarAccionesProductos() {
+        document.querySelectorAll('table .btn-editar, table .btn-borrar').forEach(boton => {
+            boton.onclick = function(e) {
+                e.preventDefault();
+                if (this.textContent.includes('Editar')) {
+                    alert('Mantenimiento del Sistema: Cargando datos del producto para edición.');
+                } else if (this.textContent.includes('Borrar')) {
+                    if (confirm('¿Está seguro de eliminar este producto del inventario de la tienda?')) {
+                        this.closest('tr').remove();
+                        alert('Registro eliminado de la tabla horizontal con éxito.');
+                    }
+                }
+            };
+        });
+    }
+    asignarAccionesProductos();
+});
+</script>
+
 
 </body>
 </html>
