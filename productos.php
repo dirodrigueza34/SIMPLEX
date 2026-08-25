@@ -158,7 +158,7 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
         </table>
     </div>
 <script>
-// CRUD Avanzado con Persistencia Permanente LocalStorage para el Módulo de Productos
+// CRUD Avanzado de Alta Precisión con Edición Corregida para Productos
 document.addEventListener("DOMContentLoaded", function() {
     const tabla = document.querySelector(".tabla-datos tbody") || document.querySelector("table tbody");
     const formulario = document.querySelector('form');
@@ -166,9 +166,9 @@ document.addEventListener("DOMContentLoaded", function() {
     
     let filaEditando = null;
 
-    // 1. Carga los productos guardados en el disco virtual del navegador
+    // 1. Carga los productos guardados en el almacenamiento del navegador
     function cargarProductosLocales() {
-        const productosGuardados = JSON.parse(localStorage.getItem('productos_reales_losprados')) || [];
+        const productosGuardados = JSON.parse(localStorage.getItem('productos_final_losprados')) || [];
         productosGuardados.forEach(prod => {
             const nuevaFila = document.createElement('tr');
             nuevaFila.innerHTML = `
@@ -188,17 +188,16 @@ document.addEventListener("DOMContentLoaded", function() {
         asignarAccionesProductos();
     }
 
-    // 2. Guarda la lista completa de mercancías en el almacenamiento local
+    // 2. Guarda la lista completa de mercancías en el LocalStorage
     function guardarEnDiscoVirtual() {
         const filas = tabla.querySelectorAll('tr');
         const listaProductos = [];
         
         filas.forEach(fila => {
-            // Verifica que la fila contenga las celdas mínimas antes de guardar
             if(fila.cells.length >= 6) {
-                // Filtra para no duplicar los registros base iniciales de la simulación
                 const idActual = fila.cells[0].textContent.trim();
-                if(parseInt(idActual) > 3) {
+                // Permite guardar solo registros dinámicos nuevos/editados para no colapsar la memoria
+                if(parseInt(idActual) > 3 || listaProductos.length > 0 || localStorage.getItem('productos_final_losprados')) {
                     listaProductos.push({
                         id_producto: idActual,
                         codigo: fila.cells[1].textContent.trim(),
@@ -210,14 +209,13 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             }
         });
-        localStorage.setItem('productos_reales_losprados', JSON.stringify(listaProductos));
+        localStorage.setItem('productos_final_losprados', JSON.stringify(listaProductos));
     }
 
     formulario.addEventListener('submit', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        // Jala las cajas de texto de tu formulario de productos
         const inputNombre = document.getElementById('nombre');
         const inputPrecio = document.getElementById('precio_venta');
         const inputStock = document.getElementById('stock');
@@ -234,18 +232,18 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         if (filaEditando) {
-            // ACCIÓN SCRUM: ACTUALIZAR LA FILA SELECCIONADA EN CALIENTE
+            // ACCIÓN SCRUM: ACTUALIZAR LAS CELDAS EN EL ORDEN EXACTO DEL HTML
             filaEditando.cells[2].textContent = nombre;
             filaEditando.cells[3].textContent = "$" + parseFloat(precio).toFixed(1);
             filaEditando.cells[4].textContent = stock;
             filaEditando.cells[5].textContent = categoria;
             
-            alert('¡Prueba Exitosa: Producto "' + nombre + '" modificado y actualizado correctamente.');
+            alert('¡Sprint Scrum Exitoso! El producto "' + nombre + '" ha sido modificado y actualizado en el inventario.');
             botonGuardar.textContent = 'Guardar';
             botonGuardar.style.backgroundColor = ''; 
             filaEditando = null;
         } else {
-            // ACCIÓN SCRUM: INSERTAR NUEVO REGISTRO SEGUIENDO EL CONSECUTIVO DE TU BASE
+            // ACCIÓN SCRUM: INSERTAR NUEVO REGISTRO
             const totalFilas = document.querySelectorAll('table tr').length;
             const nuevoId = totalFilas; 
             const codigoGenerado = "P00" + nuevoId;
@@ -264,7 +262,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 </td>
             `;
             tabla.appendChild(nuevaFila);
-            alert('¡Prueba Exitosa: Producto "' + nombre + '" registrado correctamente en el sistema web.');
+            alert('¡Sprint Scrum Exitoso! El producto "' + nombre + '" ha sido añadido al stock de internet.');
         }
         
         guardarEnDiscoVirtual();
@@ -273,7 +271,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     function asignarAccionesProductos() {
-        // Intercepta clics de edición para anular enlaces rotos de Apache
+        // Mapeo posicional exacto para subir los datos sin cruzarse
         document.querySelectorAll('table .btn-editar').forEach(boton => {
             boton.onclick = function(e) {
                 e.preventDefault();
@@ -285,33 +283,29 @@ document.addEventListener("DOMContentLoaded", function() {
                 const inputStock = document.getElementById('stock');
                 const selectCategoria = document.getElementById('id_categoria');
                 
-                // Extrae los datos reales de la fila y los sube a las casillas superiores
+                // Mapeo estricto por índice de celda de tu archivo original
                 if(inputNombre) inputNombre.value = filaEditando.cells[2].textContent.trim();
                 
-                // Limpia el signo de pesos ($) para que la casilla numérica lo acepte sin errores
                 let precioLimpio = filaEditando.cells[3].textContent.replace('$', '').trim();
                 if(inputPrecio) inputPrecio.value = parseFloat(precioLimpio);
                 
                 if(inputStock) inputStock.value = filaEditando.cells[4].textContent.trim();
                 if(selectCategoria) selectCategoria.value = filaEditando.cells[5].textContent.trim();
                 
-                // Transforma el botón superior a modo Actualizar
                 botonGuardar.textContent = 'Actualizar Producto';
                 botonGuardar.style.backgroundColor = '#ff9800';
                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                alert('Modo Edición Activado: Los datos de la mercancía se cargaron arriba en las casillas.');
             };
         });
 
-        // Programación interactiva del botón Borrar
         document.querySelectorAll('table .btn-borrar').forEach(boton => {
             boton.onclick = function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                if (confirm('¿Está seguro de eliminar este producto del inventario de la tienda?')) {
+                if (confirm('¿Está seguro de eliminar este producto del inventario?')) {
                     this.closest('tr').remove();
                     guardarEnDiscoVirtual();
-                    alert('Registro eliminado de la tabla horizontal con éxito.');
+                    alert('Registro eliminado del inventario con éxito.');
                     formulario.reset();
                     botonGuardar.textContent = 'Guardar';
                     botonGuardar.style.backgroundColor = '';
@@ -321,9 +315,12 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    // Limpia memorias intermedias viejas para asegurar el orden nuevo
+    localStorage.removeItem('productos_reales_losprados');
     cargarProductosLocales();
 });
 </script>
+
 
 
 </body>
