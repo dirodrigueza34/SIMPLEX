@@ -88,14 +88,16 @@ $resultado = $conexion->query($sqlHistorial);
     </nav>
 
     <div class="content-box">
-        <h2>Reportes Estadísticos</h2>
-        <p style="color: #666; margin-top: -10px;">Muestra balances de ganancias, stock bajo y saldo en caja.</p>
-        
-       
-        <div class="card-saldo-azul">
-            <h4>Saldo en Caja Menor</h4>
-            <div class="monto-grande">$ <?php echo number_format($saldoCajaMenor, 2, ',', ''); ?> COP</div>
-        </div>
+<form id="formSimulacion" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #e3e6f0;">
+    <input type="text" id="sim_desc" placeholder="Ej: Compra de Papelería" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px; width: 250px;" required>
+    <input type="number" id="sim_valor" placeholder="Valor $" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px; width: 120px;" required>
+    <select id="sim_tipo" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px;">
+        <option value="Credito">Compra (Egreso)</option>
+        <option value="Debito">Venta (Ingreso)</option>
+    </select>
+    <button type="submit" style="background-color: #002b5c; color: white; border: none; padding: 7px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Registrar</button>
+</form>
+
 
         <h3>Historial de Flujo de Efectivo (Caja Menor)</h3>
         
@@ -133,6 +135,48 @@ $resultado = $conexion->query($sqlHistorial);
             </tbody>
         </table>
     </div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const formulario = document.getElementById('formSimulacion');
+    const tabla = document.querySelector(".tabla-datos tbody");
+    const contenedorSaldo = document.querySelector(".card-saldo-azul .monto-grande");
+
+    formulario.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const desc = document.getElementById('sim_desc').value;
+        const valor = parseFloat(document.getElementById('sim_valor').value);
+        const tipo = document.getElementById('sim_tipo').value;
+
+        let saldoActual = parseFloat(contenedorSaldo.textContent.replace('$', '').replace('COP', '').replace(/\./g, '').replace(',', '.').trim());
+
+        if (tipo === 'Credito') {
+            saldoActual -= valor;
+        } else {
+            saldoActual += valor;
+        }
+
+        contenedorSaldo.textContent = "$ " + saldoActual.toLocaleString('co', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " COP";
+
+        const totalFilas = tabla.querySelectorAll('tr').length;
+        const nuevoId = totalFilas + 1;
+        const badgeClass = (tipo === 'Debito') ? 'badge-debito' : 'badge-credito';
+
+        const nuevaFila = document.createElement('tr');
+        nuevaFila.innerHTML = `
+            <td><b>${nuevoId}</b></td>
+            <td>${new Date().toISOString().split('T')[0]}</td>
+            <td>${desc}</td>
+            <td><span class="badge ${badgeClass}">${tipo}</span></td>
+            <td>$ ${valor.toLocaleString('co', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+        `;
+
+        tabla.insertBefore(nuevaFila, tabla.firstChild);
+        alert('Procesado correctamente.');
+        formulario.reset();
+    });
+});
+</script>
 
 </body>
 </html>
