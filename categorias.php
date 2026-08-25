@@ -150,31 +150,152 @@ $resultado = $conexion->query("SELECT * FROM categorias ORDER BY id_categoria AS
         </table>
     </div>
 <script>
-// Funcionalidad interactiva Scrum en tiempo real para el Módulo de Categorías
-document.querySelector('form').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const nombreCat = document.querySelector('input[type="text"]').value;
-    if(nombreCat.trim() === "") {
-        alert('Por favor, digite el nombre de la categoría.');
-        return;
-    }
-    alert('¡Éxito en el Sprint! La categoría "' + nombreCat + '" ha sido guardada en la persistencia del sistema web.');
-    document.querySelector('form').reset();
-    location.reload();
-});
+document.addEventListener("DOMContentLoaded", function() {
+    const tabla = document.querySelector("table tbody") || document.querySelector(".tabla-datos tbody") || document.querySelector("table");
+    const formulario = document.querySelector('form');
+    const botonGuardar = formulario.querySelector('button[type="submit"]') || formulario.querySelector('.btn-guardar') || formulario.querySelector('button');
+    
+    let filaEditando = null;
 
-document.querySelectorAll('table .btn-warning, table .btn-danger, button, a').forEach(boton => {
-    boton.addEventListener('click', function(e) {
-        e.preventDefault();
-        if(this.textContent.includes('Editar')) {
-            alert('Mantenimiento del Sistema: Cargando datos de la categoría para edición.');
-        } else if(this.textContent.includes('Borrar')) {
-            if(confirm('¿Está seguro de eliminar esta categoría de la lista registrada?')) {
-                this.closest('tr').remove();
-                alert('Registro eliminado de la tabla horizontal con éxito.');
-            }
+    function cargarCategoriasLocales() {
+        if(tabla) tabla.innerHTML = "";
+        
+        const categoriasBase = [
+            { id_categoria: 1, nombre: 'Granos', descripcion: 'Productos de granos y cereales' },
+            { id_categoria: 2, nombre: 'Licores', descripcion: 'Bebidas alcohólicas' },
+            { id_categoria: 3, nombre: 'Aseo y Hogar', 'descripcion': 'Productos de limpieza para la tienda' },
+            { id_categoria: 4, nombre: 'Lacteos', 'descripcion': 'Productos derivados de la leche' },
+            { id_categoria: 5, nombre: 'Carnes y Pescados', 'descripcion': 'Productos cárnicos y del mar' },
+            { id_categoria: 6, nombre: 'Panadería y Pastelería', 'descripcion': 'Productos horneados y dulces' },
+            { id_categoria: 7, nombre: 'Bebidas No Alcohólicas', 'descripcion': 'Refrescos, jugos y aguas' },
+            { id_categoria: 8, nombre: 'Snacks y Botanas', 'descripcion': 'Aperitivos y golosinas' },
+            { id_categoria: 9, nombre: 'Congelados', 'descripcion': 'Alimentos congelados para la venta' }
+        ];
+
+        let categoriasGuardadas = JSON.parse(localStorage.getItem('categorias_organizadas_losprados'));
+        
+        if (!categoriasGuardadas || categoriasGuardadas.length === 0) {
+            categoriasGuardadas = categoriasBase;
+            localStorage.setItem('categorias_organizadas_losprados', JSON.stringify(categoriasGuardadas));
         }
+
+        categoriasGuardadas.forEach((cat, index) => {
+            const nuevoId = index + 1;
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td>${nuevoId}</td>
+                <td>${cat.nombre}</td>
+                <td>${cat.descripcion}</td>
+                <td>
+                    <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
+                    <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
+                </td>
+            `;
+            tabla.appendChild(nuevaFila);
+        });
+        asignarAccionesCategorias();
+    }
+
+    function guardarEnDiscoVirtual() {
+        const filas = tabla.querySelectorAll('tr');
+        const listaCategorias = [];
+        filas.forEach(fila => {
+            if(fila.cells.length >= 3) {
+                listaClientes.push({
+                    id_categoria: fila.cells[0].textContent.trim(),
+                    nombre: fila.cells[1].textContent.trim(),
+                    descripcion: fila.cells[2].textContent.trim()
+                });
+            }
+        });
+        localStorage.setItem('categorias_organizadas_losprados', JSON.stringify(listaCategorias));
+    }
+
+    formulario.addEventListener('submit', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const inputs = formulario.querySelectorAll('input[type="text"]');
+        let nombre = inputs[0] ? inputs[0].value.trim() : '';
+        let descripcion = inputs[1] ? inputs[1].value.trim() : '';
+        
+        if (nombre === "") {
+            alert('Por favor, complete el nombre de la categoría.');
+            return;
+        }
+
+        if (filaEditando) {
+            filaEditando.cells[1].textContent = nombre;
+            filaEditando.cells[2].textContent = descripcion;
+            
+            alert('¡Sprint Scrum Exitoso! La categoría ha sido actualizada.');
+            botonGuardar.textContent = 'Guardar';
+            botonGuardar.style.backgroundColor = ''; 
+            filaEditando = null;
+        } else {
+            const totalFilas = tabla.querySelectorAll('tr').length;
+            const nuevoId = totalFilas + 1;
+            
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td>${nuevoId}</td>
+                <td>${nombre}</td>
+                <td>${descripcion}</td>
+                <td>
+                    <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
+                    <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
+                </td>
+            `;
+            tabla.appendChild(nuevaFila);
+            alert('¡Sprint Scrum Exitoso! Categoría registrada.');
+        }
+        
+        guardarEnDiscoVirtual();
+        formulario.reset();
+        asignarAccionesCategorias();
     });
+
+    function asignarAccionesCategorias() {
+        document.querySelectorAll('table .btn-editar').forEach(boton => {
+            boton.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                filaEditando = this.closest('tr');
+                
+                const inputs = formulario.querySelectorAll('input[type="text"]');
+                if(inputs[0]) inputs[0].value = filaEditando.cells[1].textContent.trim();
+                if(inputs[1]) inputs[1].value = filaEditando.cells[2].textContent.trim();
+                
+                botonGuardar.textContent = 'Actualizar Categoría';
+                botonGuardar.style.backgroundColor = '#ff9800';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+        });
+
+        document.querySelectorAll('table .btn-borrar').forEach(boton => {
+            boton.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (confirm('¿Está seguro de eliminar esta categoría?')) {
+                    this.closest('tr').remove();
+                    guardarEnDiscoVirtual();
+                    alert('Registro eliminado con éxito.');
+                    formulario.reset();
+                    botonGuardar.textContent = 'Guardar';
+                    botonGuardar.style.backgroundColor = '';
+                    filaEditando = null;
+                    
+                    const filasRestantes = tabla.querySelectorAll('tr');
+                    filasRestantes.forEach((f, idx) => {
+                        f.cells[0].textContent = idx + 1;
+                    });
+                    guardarEnDiscoVirtual();
+                }
+            };
+        });
+    }
+
+    cargarCategoriasLocales();
 });
 </script>
 
