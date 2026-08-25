@@ -158,7 +158,6 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
         </table>
     </div>
 <script>
-// CRUD Avanzado de Alta Precisión con Persistencia Total de Edición
 document.addEventListener("DOMContentLoaded", function() {
     const tabla = document.querySelector(".tabla-datos tbody") || document.querySelector("table tbody");
     const formulario = document.querySelector('form');
@@ -166,13 +165,27 @@ document.addEventListener("DOMContentLoaded", function() {
     
     let filaEditando = null;
 
-    // 1. Carga los productos guardados en el almacenamiento del navegador
     function cargarProductosLocales() {
-        const productosGuardados = JSON.parse(localStorage.getItem('productos_final_losprados_v2')) || [];
-        productosGuardados.forEach(prod => {
+        if (tabla) tabla.innerHTML = "";
+        
+        const productosBase = [
+            { id_producto: 1, codigo: 'P001', nombre: 'Arroz Diana 1kg', precio: '$4,200.0', stock: '50', id_categoria: '1' },
+            { id_producto: 2, codigo: 'P002', nombre: 'Aceite Premier 1L', precio: '$11,500.0', stock: '24', id_categoria: '4' },
+            { id_producto: 3, codigo: 'P003', nombre: 'Leche Alquería 1L', precio: '$4,500.0', stock: '30', id_categoria: '4' }
+        ];
+
+        let productosGuardados = JSON.parse(localStorage.getItem('productos_organizados_losprados'));
+        
+        if (!productosGuardados || productosGuardados.length === 0) {
+            productosGuardados = productosBase;
+            localStorage.setItem('productos_organizados_losprados', JSON.stringify(productosGuardados));
+        }
+
+        productosGuardados.forEach((prod, index) => {
+            const nuevoId = index + 1;
             const nuevaFila = document.createElement('tr');
             nuevaFila.innerHTML = `
-                <td>${prod.id_producto}</td>
+                <td>${nuevoId}</td>
                 <td>${prod.codigo}</td>
                 <td>${prod.nombre}</td>
                 <td>${prod.precio}</td>
@@ -188,12 +201,11 @@ document.addEventListener("DOMContentLoaded", function() {
         asignarAccionesProductos();
     }
 
-    // 2. Guarda la lista completa de mercancías en el LocalStorage
     function guardarEnDiscoVirtual() {
         const filas = tabla.querySelectorAll('tr');
         const listaProductos = [];
         
-        filas.forEach(fila => {
+        filas.forEach((fila) => {
             if(fila.cells.length >= 6) {
                 listaProductos.push({
                     id_producto: fila.cells[0].textContent.trim(),
@@ -205,7 +217,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 });
             }
         });
-        localStorage.setItem('productos_final_losprados_v2', JSON.stringify(listaProductos));
+        localStorage.setItem('productos_organizados_losprados', JSON.stringify(listaProductos));
     }
 
     formulario.addEventListener('submit', function(e) {
@@ -228,21 +240,18 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         if (filaEditando) {
-            // ACCIÓN SCRUM: ACTUALIZAR LAS CELDAS
             filaEditando.cells[2].textContent = nombre;
-            filaEditando.cells[3].textContent = "$" + parseFloat(precio).toFixed(1);
+            filaEditando.cells[3].textContent = "$" + parseFloat(precio).toLocaleString('co', { minimumFractionDigits: 1 });
             filaEditando.cells[4].textContent = stock;
             filaEditando.cells[5].textContent = category;
             
-            alert('¡Sprint Scrum Exitoso! El producto "' + nombre + '" ha sido modificado y actualizado en el inventario.');
+            alert('¡Sprint Scrum Exitoso! El producto "' + nombre + '" ha sido actualizado en el inventario.');
             botonGuardar.textContent = 'Guardar';
             botonGuardar.style.backgroundColor = ''; 
             filaEditando = null;
         } else {
-            // ACCIÓN SCRUM: INSERTAR NUEVO REGISTRO
             const totalFilas = tabla.querySelectorAll('tr').length;
-            // Si la tabla está vacía arranca en 4 (para respetar tus 3 base simulados por PHP)
-            const nuevoId = totalFilas === 0 ? 4 : totalFilas + 1; 
+            const nuevoId = totalFilas + 1; 
             const codigoGenerado = "P00" + nuevoId;
             
             const nuevaFila = document.createElement('tr');
@@ -250,7 +259,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 <td>${nuevoId}</td>
                 <td>${codigoGenerado}</td>
                 <td>${nombre}</td>
-                <td>$${parseFloat(precio).toFixed(1)}</td>
+                <td>$${parseFloat(precio).toLocaleString('co', { minimumFractionDigits: 1 })}</td>
                 <td>${stock}</td>
                 <td>${category}</td>
                 <td>
@@ -259,10 +268,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 </td>
             `;
             tabla.appendChild(nuevaFila);
-            alert('¡Sprint Scrum Exitoso! El producto "' + nombre + '" ha sido añadido al stock de internet.');
+            alert('¡Sprint Scrum Exitoso! El producto "' + nombre + '" ha sido registrado en el stock.');
         }
         
-        // CORRECCIÓN CLAVE: Guarda en el disco virtual SIEMPRE (tanto para nuevos como para editados)
         guardarEnDiscoVirtual();
         formulario.reset();
         asignarAccionesProductos();
@@ -282,7 +290,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 
                 if(inputNombre) inputNombre.value = filaEditando.cells[2].textContent.trim();
                 
-                let precioLimpio = filaEditando.cells[3].textContent.replace('$', '').trim();
+                let precioLimpio = filaEditando.cells[3].textContent.replace('$', '').replace(/,/g, '').trim();
                 if(inputPrecio) inputPrecio.value = parseFloat(precioLimpio);
                 
                 if(inputStock) inputStock.value = filaEditando.cells[4].textContent.trim();
@@ -306,13 +314,20 @@ document.addEventListener("DOMContentLoaded", function() {
                     botonGuardar.textContent = 'Guardar';
                     botonGuardar.style.backgroundColor = '';
                     filaEditando = null;
+                    
+                    const filasRestantes = tabla.querySelectorAll('tr');
+                    filasRestantes.forEach((f, idx) => {
+                        f.cells[0].textContent = idx + 1;
+                    });
+                    guardarEnDiscoVirtual();
                 }
             };
         });
     }
 
-    // Limpia memorias viejas intermedias para asegurar la nueva persistencia corregida
+    localStorage.removeItem('productos_reales_losprados');
     localStorage.removeItem('productos_final_losprados');
+    localStorage.removeItem('productos_final_losprados_v2');
     cargarProductosLocales();
 });
 </script>
