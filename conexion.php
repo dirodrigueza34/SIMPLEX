@@ -47,12 +47,15 @@ class ConectorUniversal {
             ]];
         } 
         // 5. CONDICIONAL PARA VENTAS Y REPORTES
+         elseif (strpos($sql, 'sum(case') !== false) {
+            $datos = [['ingresos' => 1450000.00, 'egresos' => 350000.00]];
+        }
         else {
-            $datos = [[
-                'id_asiento' => 1, 'id_detalle' => 1, 'fecha' => date('Y-m-d'),
-                'descripcion' => 'Apertura de caja menor del día', 'tipo' => 'Contado',
-                'valor' => 450000.00, 'ingresos' => 450000.00, 'egresos' => 0.00
-            ]];
+            $datos = [
+                ['id_detalle' => 1, 'fecha' => date('Y-m-d'), 'descripcion' => 'Venta de mercancía - Factura 001', 'tipo' => 'Debito', 'valor' => 1200000.00],
+                ['id_detalle' => 2, 'fecha' => date('Y-m-d'), 'descripcion' => 'Pago a Proveedor Alpina', 'tipo' => 'Credito', 'valor' => 350000.00],
+                ['id_detalle' => 3, 'fecha' => date('Y-m-d'), 'descripcion' => 'Venta de abarrotes - Contado', 'tipo' => 'Debito', 'valor' => 250000.00]
+            ];
         }
 
         return new class($datos) {
