@@ -139,44 +139,52 @@ $resultado = $conexion->query($sqlHistorial);
 document.addEventListener("DOMContentLoaded", function() {
     const formulario = document.getElementById('formSimulacion');
     const tabla = document.querySelector(".tabla-datos tbody");
-    const contenedorSaldo = document.querySelector(".card-saldo-azul .monto-grande");
+    const contenedorSaldo = document.querySelector(".monto-grande") || document.querySelector(".card-saldo-azul div");
 
-    formulario.addEventListener('submit', function(e) {
-        e.preventDefault();
+    if (formulario && tabla && contenedorSaldo) {
+        formulario.addEventListener('submit', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
 
-        const desc = document.getElementById('sim_desc').value;
-        const valor = parseFloat(document.getElementById('sim_valor').value);
-        const tipo = document.getElementById('sim_tipo').value;
+            const desc = document.getElementById('sim_desc').value;
+            const valor = parseFloat(document.getElementById('sim_valor').value);
+            const tipo = document.getElementById('sim_tipo').value;
 
-        let saldoActual = parseFloat(contenedorSaldo.textContent.replace('$', '').replace('COP', '').replace(/\./g, '').replace(',', '.').trim());
+            let textoSaldo = contenedorSaldo.textContent.replace('$', '').replace('COP', '').trim();
+            textoSaldo = textoSaldo.replace(/\./g, '').replace(',', '.');
+            let saldoActual = parseFloat(textoSaldo);
 
-        if (tipo === 'Credito') {
-            saldoActual -= valor;
-        } else {
-            saldoActual += valor;
-        }
+            if (isNaN(saldoActual)) saldoActual = 0;
 
-        contenedorSaldo.textContent = "$ " + saldoActual.toLocaleString('co', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " COP";
+            if (tipo === 'Credito') {
+                saldoActual -= valor;
+            } else {
+                saldoActual += valor;
+            }
 
-        const totalFilas = tabla.querySelectorAll('tr').length;
-        const nuevoId = totalFilas + 1;
-        const badgeClass = (tipo === 'Debito') ? 'badge-debito' : 'badge-credito';
+            contenedorSaldo.textContent = "$ " + saldoActual.toLocaleString('co', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " COP";
 
-        const nuevaFila = document.createElement('tr');
-        nuevaFila.innerHTML = `
-            <td><b>${nuevoId}</b></td>
-            <td>${new Date().toISOString().split('T')[0]}</td>
-            <td>${desc}</td>
-            <td><span class="badge ${badgeClass}">${tipo}</span></td>
-            <td>$ ${valor.toLocaleString('co', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-        `;
+            const totalFilas = tabla.querySelectorAll('tr').length;
+            const nuevoId = totalFilas + 1;
+            const badgeClass = (tipo === 'Debito') ? 'badge-debito' : 'badge-credito';
 
-        tabla.insertBefore(nuevaFila, tabla.firstChild);
-        alert('Procesado correctamente.');
-        formulario.reset();
-    });
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td><b>${nuevoId}</b></td>
+                <td>${new Date().toISOString().split('T')[0]}</td>
+                <td>${desc}</td>
+                <td><span class="badge ${badgeClass}">${tipo}</span></td>
+                <td>$ ${valor.toLocaleString('co', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+            `;
+
+            tabla.insertBefore(nuevaFila, tabla.firstChild);
+            alert('Procesado correctamente.');
+            formulario.reset();
+        });
+    }
 });
 </script>
+
 
 </body>
 </html>
