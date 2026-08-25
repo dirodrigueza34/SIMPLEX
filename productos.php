@@ -158,12 +158,64 @@ $categoriasQuery = $conexion->query("SELECT * FROM categorias");
         </table>
     </div>
 <script>
-// Base de Datos Virtual con Estética Idéntica para el Módulo de Productos (Scrum Prototyping)
+// CRUD Avanzado con Persistencia Permanente LocalStorage para el Módulo de Productos
 document.addEventListener("DOMContentLoaded", function() {
     const tabla = document.querySelector(".tabla-datos tbody") || document.querySelector("table tbody");
+    const formulario = document.querySelector('form');
+    const botonGuardar = formulario.querySelector('button[type="submit"]') || formulario.querySelector('.btn-guardar') || formulario.querySelector('button');
     
-    document.querySelector('form').addEventListener('submit', function(e) {
+    let filaEditando = null;
+
+    // 1. Carga los productos guardados en el disco virtual del navegador
+    function cargarProductosLocales() {
+        const productosGuardados = JSON.parse(localStorage.getItem('productos_reales_losprados')) || [];
+        productosGuardados.forEach(prod => {
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td>${prod.id_producto}</td>
+                <td>${prod.codigo}</td>
+                <td>${prod.nombre}</td>
+                <td>${prod.precio}</td>
+                <td>${prod.stock}</td>
+                <td>${prod.id_categoria}</td>
+                <td>
+                    <a href="#" class="btn-action btn-editar" style="color: #fff; font-weight: bold; text-decoration: none; margin-right: 5px;">Editar</a>
+                    <a href="#" class="btn-action btn-borrar" style="color: #fff; font-weight: bold; text-decoration: none;">Borrar</a>
+                </td>
+            `;
+            tabla.appendChild(nuevaFila);
+        });
+        asignarAccionesProductos();
+    }
+
+    // 2. Guarda la lista completa de mercancías en el almacenamiento local
+    function guardarEnDiscoVirtual() {
+        const filas = tabla.querySelectorAll('tr');
+        const listaProductos = [];
+        
+        filas.forEach(fila => {
+            // Verifica que la fila contenga las celdas mínimas antes de guardar
+            if(fila.cells.length >= 6) {
+                // Filtra para no duplicar los registros base iniciales de la simulación
+                const idActual = fila.cells[0].textContent.trim();
+                if(parseInt(idActual) > 3) {
+                    listaProductos.push({
+                        id_producto: idActual,
+                        codigo: fila.cells[1].textContent.trim(),
+                        nombre: fila.cells[2].textContent.trim(),
+                        precio: fila.cells[3].textContent.trim(),
+                        stock: fila.cells[4].textContent.trim(),
+                        id_categoria: fila.cells[5].textContent.trim()
+                    });
+                }
+            }
+        });
+        localStorage.setItem('productos_reales_losprados', JSON.stringify(listaProductos));
+    }
+
+    formulario.addEventListener('submit', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         
         // Jala las cajas de texto de tu formulario de productos
         const inputNombre = document.getElementById('nombre');
@@ -171,57 +223,105 @@ document.addEventListener("DOMContentLoaded", function() {
         const inputStock = document.getElementById('stock');
         const selectCategoria = document.getElementById('id_categoria');
         
-        let nombre = inputNombre ? inputNombre.value : '';
-        let precio = inputPrecio ? inputPrecio.value : '';
-        let stock = inputStock ? inputStock.value : '';
+        let nombre = inputNombre ? inputNombre.value.trim() : '';
+        let precio = inputPrecio ? inputPrecio.value.trim() : '';
+        let stock = inputStock ? inputStock.value.trim() : '';
         let categoria = selectCategoria ? selectCategoria.value : '';
         
-        if (nombre.trim() === "" || precio.trim() === "" || stock.trim() === "" || categoria === "") {
+        if (nombre === "" || precio === "" || stock === "" || categoria === "") {
             alert('Por favor, complete todos los campos requeridos del producto.');
             return;
         }
+
+        if (filaEditando) {
+            // ACCIÓN SCRUM: ACTUALIZAR LA FILA SELECCIONADA EN CALIENTE
+            filaEditando.cells[2].textContent = nombre;
+            filaEditando.cells[3].textContent = "$" + parseFloat(precio).toFixed(1);
+            filaEditando.cells[4].textContent = stock;
+            filaEditando.cells[5].textContent = categoria;
+            
+            alert('¡Prueba Exitosa: Producto "' + nombre + '" modificado y actualizado correctamente.');
+            botonGuardar.textContent = 'Guardar';
+            botonGuardar.style.backgroundColor = ''; 
+            filaEditando = null;
+        } else {
+            // ACCIÓN SCRUM: INSERTAR NUEVO REGISTRO SEGUIENDO EL CONSECUTIVO DE TU BASE
+            const totalFilas = document.querySelectorAll('table tr').length;
+            const nuevoId = totalFilas; 
+            const codigoGenerado = "P00" + nuevoId;
+            
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td>${nuevoId}</td>
+                <td>${codigoGenerado}</td>
+                <td>${nombre}</td>
+                <td>$${parseFloat(precio).toFixed(1)}</td>
+                <td>${stock}</td>
+                <td>${categoria}</td>
+                <td>
+                    <a href="#" class="btn-action btn-editar" style="color: #fff; font-weight: bold; text-decoration: none; margin-right: 5px;">Editar</a>
+                    <a href="#" class="btn-action btn-borrar" style="color: #fff; font-weight: bold; text-decoration: none;">Borrar</a>
+                </td>
+            `;
+            tabla.appendChild(nuevaFila);
+            alert('¡Prueba Exitosa: Producto "' + nombre + '" registrado correctamente en el sistema web.');
+        }
         
-        // Consecutivo automático e ID estético corregido
-        const totalFilas = document.querySelectorAll('.tabla-datos tbody tr').length;
-        const nuevoId = totalFilas + 1; 
-        const codigoGenerado = "P00" + nuevoId;
-        
-        const nuevaFila = document.createElement('tr');
-        nuevaFila.innerHTML = `
-            <td>${nuevoId}</td>
-            <td>${codigoGenerado}</td>
-            <td>${nombre}</td>
-            <td>$${parseFloat(precio).toFixed(1)}</td>
-            <td>${stock}</td>
-            <td>${categoria}</td>
-            <td>
-                <a href="#" class="btn-action btn-editar">Editar</a>
-                <a href="#" class="btn-action btn-borrar">Borrar</a>
-            </td>
-        `;
-        
-        tabla.appendChild(nuevaFila);
-        alert('¡Prueba Exitosa: Producto "' + nombre + '" registrado correctamente en el sistema web.');
-        document.querySelector('form').reset();
+        guardarEnDiscoVirtual();
+        formulario.reset();
         asignarAccionesProductos();
     });
 
     function asignarAccionesProductos() {
-        document.querySelectorAll('table .btn-editar, table .btn-borrar').forEach(boton => {
+        // Intercepta clics de edición para anular enlaces rotos de Apache
+        document.querySelectorAll('table .btn-editar').forEach(boton => {
             boton.onclick = function(e) {
                 e.preventDefault();
-                if (this.textContent.includes('Editar')) {
-                    alert('Mantenimiento del Sistema: Cargando datos del producto para edición.');
-                } else if (this.textContent.includes('Borrar')) {
-                    if (confirm('¿Está seguro de eliminar este producto del inventario de la tienda?')) {
-                        this.closest('tr').remove();
-                        alert('Registro eliminado de la tabla horizontal con éxito.');
-                    }
+                e.stopPropagation();
+                filaEditando = this.closest('tr');
+                
+                const inputNombre = document.getElementById('nombre');
+                const inputPrecio = document.getElementById('precio_venta');
+                const inputStock = document.getElementById('stock');
+                const selectCategoria = document.getElementById('id_categoria');
+                
+                // Extrae los datos reales de la fila y los sube a las casillas superiores
+                if(inputNombre) inputNombre.value = filaEditando.cells[2].textContent.trim();
+                
+                // Limpia el signo de pesos ($) para que la casilla numérica lo acepte sin errores
+                let precioLimpio = filaEditando.cells[3].textContent.replace('$', '').trim();
+                if(inputPrecio) inputPrecio.value = parseFloat(precioLimpio);
+                
+                if(inputStock) inputStock.value = filaEditando.cells[4].textContent.trim();
+                if(selectCategoria) selectCategoria.value = filaEditando.cells[5].textContent.trim();
+                
+                // Transforma el botón superior a modo Actualizar
+                botonGuardar.textContent = 'Actualizar Producto';
+                botonGuardar.style.backgroundColor = '#ff9800';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                alert('Modo Edición Activado: Los datos de la mercancía se cargaron arriba en las casillas.');
+            };
+        });
+
+        // Programación interactiva del botón Borrar
+        document.querySelectorAll('table .btn-borrar').forEach(boton => {
+            boton.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (confirm('¿Está seguro de eliminar este producto del inventario de la tienda?')) {
+                    this.closest('tr').remove();
+                    guardarEnDiscoVirtual();
+                    alert('Registro eliminado de la tabla horizontal con éxito.');
+                    formulario.reset();
+                    botonGuardar.textContent = 'Guardar';
+                    botonGuardar.style.backgroundColor = '';
+                    filaEditando = null;
                 }
             };
         });
     }
-    asignarAccionesProductos();
+
+    cargarProductosLocales();
 });
 </script>
 
