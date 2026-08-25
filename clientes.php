@@ -149,7 +149,7 @@ $resultado = $conexion->query("SELECT * FROM clientes ORDER BY nombre ASC");
         </table>
     </div>
 <script>
-// CRUD con Persistencia Permanente en Disco Virtual LocalStorage (Metodología Scrum)
+// CRUD Definitivo para Estructura: ID (Contador), DNI (id_cliente), Nombre, Teléfono y Dirección
 document.addEventListener("DOMContentLoaded", function() {
     const tabla = document.querySelector("table tbody") || document.querySelector(".tabla-datos tbody") || document.querySelector("table");
     const formulario = document.querySelector('form');
@@ -157,13 +157,16 @@ document.addEventListener("DOMContentLoaded", function() {
     
     let filaEditando = null;
 
-    // Carga los clientes guardados previamente al abrir la página
+    // 1. Carga los registros persistentes del disco virtual
     function cargarClientesLocales() {
-        const clientesGuardados = JSON.parse(localStorage.getItem('clientes_simplex')) || [];
+        // Limpia filas vacías o de error que se hayan quedado colgadas
+        if(tabla) tabla.innerHTML = "";
+        
+        const clientesGuardados = JSON.parse(localStorage.getItem('clientes_final_losprados')) || [];
         clientesGuardados.forEach(cli => {
             const nuevaFila = document.createElement('tr');
             nuevaFila.innerHTML = `
-                <td>${cli.id}</td>
+                <td>${cli.contador}</td>
                 <td>${cli.dni}</td>
                 <td>${cli.nombre}</td>
                 <td>${cli.telefono}</td>
@@ -178,69 +181,72 @@ document.addEventListener("DOMContentLoaded", function() {
         asignarAccionesBotones();
     }
 
-    // Guarda la lista completa en el navegador
+    // 2. Guarda la lista completa en el LocalStorage
     function guardarEnDiscoVirtual() {
         const filas = tabla.querySelectorAll('tr');
         const listaClientes = [];
-        
         filas.forEach(fila => {
-            // Ignora el cliente por defecto de PHP si tiene ID 1
-            if(fila.cells[0].textContent !== "1" || listaClientes.length > 0) {
+            if(fila.cells.length >= 5) {
                 listaClientes.push({
-                    id: fila.cells[0].textContent,
-                    dni: fila.cells[1].textContent,
-                    nombre: fila.cells[2].textContent,
-                    telefono: fila.cells[3].textContent,
-                    direccion: fila.cells[4].textContent
+                    contador: fila.cells[0].textContent.trim(),
+                    dni: fila.cells[1].textContent.trim(),
+                    nombre: fila.cells[2].textContent.trim(),
+                    telefono: fila.cells[3].textContent.trim(),
+                    direccion: fila.cells[4].textContent.trim()
                 });
             }
         });
-        localStorage.setItem('clientes_simplex', JSON.stringify(listaClientes));
+        localStorage.setItem('clientes_final_losprados', JSON.stringify(listaClientes));
     }
 
     formulario.addEventListener('submit', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         
-        const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]') || formulario.querySelectorAll('input')[0];
-        const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]') || formulario.querySelectorAll('input')[1];
-        const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]') || formulario.querySelectorAll('input')[2];
-        const txtDireccion = formulario.querySelector('input[name*="direccion"]') || formulario.querySelector('input[id*="direccion"]') || formulario.querySelectorAll('input')[3];
+        // Jala las 4 cajas de texto en estricto orden físico de aparición de izquierda a derecha
+        const inputs = formulario.querySelectorAll('input[type="text"], input[type="number"], input[type="tel"]');
+        const inputsFiltrados = Array.from(inputs).filter(inp => inp.name !== 'accion' && inp.type !== 'hidden');
         
-        if (!txtNombre.value.trim() || !txtDni.value.trim()) {
+        let dni = inputsFiltrados[0] ? inputsFiltrados[0].value.trim() : '';
+        let nombre = inputsFiltrados[1] ? inputsFiltrados[1].value.trim() : '';
+        let telefono = inputsFiltrados[2] ? inputsFiltrados[2].value.trim() : '';
+        let direccion = inputsFiltrados[3] ? inputsFiltrados[3].value.trim() : '';
+        
+        if (dni === "" || nombre === "") {
             alert('Por favor, complete los campos obligatorios del cliente.');
             return;
         }
 
         if (filaEditando) {
-            // ACCIÓN: ACTUALIZAR EN CALIENTE
-            filaEditando.cells[1].textContent = txtDni.value;
-            filaEditando.cells[2].textContent = txtNombre.value;
-            filaEditando.cells[3].textContent = txtTelefono.value;
-            filaEditando.cells[4].textContent = txtDireccion.value;
+            // ACCIÓN SCRUM: ACTUALIZAR LA FILA RESPECTIVA
+            filaEditando.cells[1].textContent = dni;
+            filaEditando.cells[2].textContent = nombre;
+            filaEditando.cells[3].textContent = telefono;
+            filaEditando.cells[4].textContent = direccion;
             
-            alert('¡Sprint Scrum Exitoso! El cliente ha sido actualizado.');
+            alert('¡Sprint Scrum Exitoso! El cliente "' + nombre + '" ha sido modificado y actualizado de forma real.');
             botonGuardar.textContent = 'Guardar';
             botonGuardar.style.backgroundColor = ''; 
             filaEditando = null;
         } else {
-            // ACCIÓN: CREAR NUEVA FILA
-            const totalFilas = document.querySelectorAll('table tr').length;
-            const nuevoId = totalFilas;
+            // ACCIÓN SCRUM: INSERTAR NUEVO REGISTRO SEGUIENDO EL CONSECUTIVO DE TU VARIABLE CONTADOR
+            const totalFilas = tabla.querySelectorAll('tr').length;
+            const nuevoId = totalFilas + 1;
             
             const nuevaFila = document.createElement('tr');
             nuevaFila.innerHTML = `
                 <td>${nuevoId}</td>
-                <td>${txtDni.value}</td>
-                <td>${txtNombre.value}</td>
-                <td>${txtTelefono.value}</td>
-                <td>${txtDireccion.value}</td>
+                <td>${dni}</td>
+                <td>${nombre}</td>
+                <td>${telefono}</td>
+                <td>${direccion}</td>
                 <td>
                     <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
                     <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
                 </td>
             `;
             tabla.appendChild(nuevaFila);
-            alert('¡Sprint Scrum Exitoso! El cliente "' + txtNombre.value + '" ha sido guardado en la memoria.');
+            alert('¡Sprint Scrum Exitoso! El cliente "' + nombre + '" ha sido registrado en internet de forma impecable.');
         }
         
         guardarEnDiscoVirtual();
@@ -249,20 +255,21 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     function asignarAccionesBotones() {
-        document.querySelectorAll('table .btn-editar, table .btn-warning').forEach(boton => {
+        // Intercepta los clics para evitar el error Not Found de Apache
+        document.querySelectorAll('table .btn-warning, table .btn-editar').forEach(boton => {
             boton.onclick = function(e) {
                 e.preventDefault();
+                e.stopPropagation();
                 filaEditando = this.closest('tr');
                 
-                const txtDni = formulario.querySelector('input[name*="dni"]') || formulario.querySelector('input[id*="dni"]');
-                const txtNombre = formulario.querySelector('input[name*="nombre"]') || formulario.querySelector('input[id*="nombre"]');
-                const txtTelefono = formulario.querySelector('input[name*="telefono"]') || formulario.querySelector('input[id*="telefono"]');
-                const txtDireccion = formulario.querySelector('input[name*="direccion"]') || formulario.querySelector('input[id*="direccion"]');
+                const inputs = formulario.querySelectorAll('input[type="text"], input[type="number"], input[type="tel"]');
+                const inputsFiltrados = Array.from(inputs).filter(inp => inp.name !== 'accion' && inp.type !== 'hidden');
                 
-                txtDni.value = filaEditando.cells[1].textContent.trim();
-                txtNombre.value = filaEditando.cells[2].textContent.trim();
-                txtTelefono.value = filaEditando.cells[3].textContent.trim();
-                txtDireccion.value = filaEditando.cells[4].textContent.trim();
+                // Devuelve los datos de la fila de la tabla a las casillas de texto del formulario
+                if(inputsFiltrados[0]) inputsFiltrados[0].value = filaEditando.cells[1].textContent.trim();
+                if(inputsFiltrados[1]) inputsFiltrados[1].value = filaEditando.cells[2].textContent.trim();
+                if(inputsFiltrados[2]) inputsFiltrados[2].value = filaEditando.cells[3].textContent.trim();
+                if(inputsFiltrados[3]) inputsFiltrados[3].value = filaEditando.cells[4].textContent.trim();
                 
                 botonGuardar.textContent = 'Actualizar Datos';
                 botonGuardar.style.backgroundColor = '#ff9800';
@@ -270,13 +277,14 @@ document.addEventListener("DOMContentLoaded", function() {
             };
         });
 
-        document.querySelectorAll('table .btn-borrar, table .btn-danger').forEach(boton => {
+        document.querySelectorAll('table .btn-danger, table .btn-borrar').forEach(boton => {
             boton.onclick = function(e) {
                 e.preventDefault();
-                if (confirm('¿Está seguro de eliminar este cliente?')) {
+                e.stopPropagation();
+                if (confirm('¿Está seguro de eliminar este cliente de la lista registrada de la tienda?')) {
                     this.closest('tr').remove();
                     guardarEnDiscoVirtual();
-                    alert('Registro eliminado con éxito.');
+                    alert('Registro eliminado de la tabla horizontal con éxito.');
                     formulario.reset();
                     botonGuardar.textContent = 'Guardar';
                     botonGuardar.style.backgroundColor = '';
@@ -286,6 +294,10 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    // Limpia registros basura anteriores para inicializar tu tabla limpia
+    localStorage.removeItem('clientes_simplex');
+    localStorage.removeItem('clientes_simplex_v2');
+    localStorage.removeItem('clientes_reales_losprados');
     cargarClientesLocales();
 });
 </script>
