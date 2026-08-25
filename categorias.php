@@ -161,22 +161,21 @@ document.addEventListener("DOMContentLoaded", function() {
         if(tabla) tabla.innerHTML = "";
         
         const categoriasBase = [
-            { id_categoria: 1, nombre: 'Granos', descripcion: 'Productos de granos y cereales' },
-            { id_categoria: 2, nombre: 'Licores', descripcion: 'Bebidas alcohólicas' },
-            { id_categoria: 3, nombre: 'Aseo y Hogar', 'descripcion': 'Productos de limpieza para la tienda' },
-            { id_categoria: 4, nombre: 'Lacteos', 'descripcion': 'Productos derivados de la leche' },
-            { id_categoria: 5, nombre: 'Carnes y Pescados', 'descripcion': 'Productos cárnicos y del mar' },
-            { id_categoria: 6, nombre: 'Panadería y Pastelería', 'descripcion': 'Productos horneados y dulces' },
-            { id_categoria: 7, nombre: 'Bebidas No Alcohólicas', 'descripcion': 'Refrescos, jugos y aguas' },
-            { id_categoria: 8, nombre: 'Snacks y Botanas', 'descripcion': 'Aperitivos y golosinas' },
-            { id_categoria: 9, nombre: 'Congelados', 'descripcion': 'Alimentos congelados para la venta' }
+            { nombre: 'Granos' },
+            { nombre: 'Lácteos' },
+            { nombre: 'Aseo' },
+            { nombre: 'Confetis' },
+            { nombre: 'Licor' },
+            { nombre: 'Lácteos y Quesos' },
+            { nombre: 'Cuidado Personal' },
+            { nombre: 'cumpleaños' }
         ];
 
-        let categoriasGuardadas = JSON.parse(localStorage.getItem('categorias_organizadas_losprados'));
+        let categoriasGuardadas = JSON.parse(localStorage.getItem('categorias_reales_losprados'));
         
         if (!categoriasGuardadas || categoriasGuardadas.length === 0) {
             categoriasGuardadas = categoriasBase;
-            localStorage.setItem('categorias_organizadas_losprados', JSON.stringify(categoriasGuardadas));
+            localStorage.setItem('categorias_reales_losprados', JSON.stringify(categoriasGuardadas));
         }
 
         categoriasGuardadas.forEach((cat, index) => {
@@ -185,7 +184,6 @@ document.addEventListener("DOMContentLoaded", function() {
             nuevaFila.innerHTML = `
                 <td>${nuevoId}</td>
                 <td>${cat.nombre}</td>
-                <td>${cat.descripcion}</td>
                 <td>
                     <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
                     <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
@@ -200,24 +198,21 @@ document.addEventListener("DOMContentLoaded", function() {
         const filas = tabla.querySelectorAll('tr');
         const listaCategorias = [];
         filas.forEach(fila => {
-            if(fila.cells.length >= 3) {
-                listaClientes.push({
-                    id_categoria: fila.cells[0].textContent.trim(),
-                    nombre: fila.cells[1].textContent.trim(),
-                    descripcion: fila.cells[2].textContent.trim()
+            if(fila.cells.length >= 2) {
+                listaCategorias.push({
+                    nombre: fila.cells[1].textContent.trim()
                 });
             }
         });
-        localStorage.setItem('categorias_organizadas_losprados', JSON.stringify(listaCategorias));
+        localStorage.setItem('categorias_reales_losprados', JSON.stringify(listaCategorias));
     }
 
     formulario.addEventListener('submit', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        const inputs = formulario.querySelectorAll('input[type="text"]');
-        let nombre = inputs[0] ? inputs[0].value.trim() : '';
-        let descripcion = inputs[1] ? inputs[1].value.trim() : '';
+        const txtNombre = formulario.querySelector('input[type="text"]');
+        let nombre = txtNombre ? txtNombre.value.trim() : '';
         
         if (nombre === "") {
             alert('Por favor, complete el nombre de la categoría.');
@@ -226,9 +221,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (filaEditando) {
             filaEditando.cells[1].textContent = nombre;
-            filaEditando.cells[2].textContent = descripcion;
             
-            alert('¡Sprint Scrum Exitoso! La categoría ha sido actualizada.');
+            alert('¡Sprint Scrum Exitoso! La categoría "' + nombre + '" ha sido modificada y actualizada.');
             botonGuardar.textContent = 'Guardar';
             botonGuardar.style.backgroundColor = ''; 
             filaEditando = null;
@@ -240,14 +234,13 @@ document.addEventListener("DOMContentLoaded", function() {
             nuevaFila.innerHTML = `
                 <td>${nuevoId}</td>
                 <td>${nombre}</td>
-                <td>${descripcion}</td>
                 <td>
                     <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
                     <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
                 </td>
             `;
             tabla.appendChild(nuevaFila);
-            alert('¡Sprint Scrum Exitoso! Categoría registrada.');
+            alert('¡Sprint Scrum Exitoso! La categoría "' + nombre + '" ha sido registrada en el stock.');
         }
         
         guardarEnDiscoVirtual();
@@ -262,9 +255,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 e.stopPropagation();
                 filaEditando = this.closest('tr');
                 
-                const inputs = formulario.querySelectorAll('input[type="text"]');
-                if(inputs[0]) inputs[0].value = filaEditando.cells[1].textContent.trim();
-                if(inputs[1]) inputs[1].value = filaEditando.cells[2].textContent.trim();
+                const txtNombre = formulario.querySelector('input[type="text"]');
+                if(txtNombre) txtNombre.value = filaEditando.cells[1].textContent.trim();
                 
                 botonGuardar.textContent = 'Actualizar Categoría';
                 botonGuardar.style.backgroundColor = '#ff9800';
@@ -276,10 +268,10 @@ document.addEventListener("DOMContentLoaded", function() {
             boton.onclick = function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                if (confirm('¿Está seguro de eliminar esta categoría?')) {
+                if (confirm('¿Está seguro de eliminar esta categoría de la lista registrada de la tienda?')) {
                     this.closest('tr').remove();
                     guardarEnDiscoVirtual();
-                    alert('Registro eliminado con éxito.');
+                    alert('Registro eliminado de la tabla horizontal con éxito.');
                     formulario.reset();
                     botonGuardar.textContent = 'Guardar';
                     botonGuardar.style.backgroundColor = '';
@@ -295,9 +287,11 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    localStorage.removeItem('categorias_final_losprados');
     cargarCategoriasLocales();
 });
 </script>
+
 
 
 
