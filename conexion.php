@@ -1,5 +1,4 @@
 <?php
-// Módulo 4: Comunicación y API - Conexión Maestra Multimódulo Blindada
 class ConectorUniversal {
     public $num_rows = 1;
     public $error = "";
@@ -15,7 +14,9 @@ class ConectorUniversal {
         if (strpos($sql, 'max(id_producto)') !== false) {
             $datos = [['max_id' => 3]];
         }
-        // 1. CONDICIONAL PARA EL MÓDULO DE PRODUCTOS (INVENTARIO)
+        elseif (strpos($sql, 'inventario_resumen') !== false || strpos($sql, 'sum(') !== false) {
+            $datos = [['total_existencias' => 104, 'valor_total' => 690200.00, 'stock_bajo' => 1, 'ingresos' => 1450000.00, 'egresos' => 350000.00]];
+        }
         elseif (strpos($sql, 'producto') !== false) {
             $datos = [
                 ['id_producto' => 1, 'codigo' => 'P001', 'nombre' => 'Arroz Diana 1kg', 'precio' => 4200.00, 'stock' => 50, 'id_categoria' => 1],
@@ -23,7 +24,6 @@ class ConectorUniversal {
                 ['id_producto' => 3, 'codigo' => 'P003', 'nombre' => 'Leche Alquería 1L', 'precio' => 4500.00, 'stock' => 30, 'id_categoria' => 4]
             ];
         } 
-        // 2. CONDICIONAL CORREGIDO PARA EL MÓDULO DE CATEGORÍAS (SINGULAR Y PLURAL)
         elseif (strpos($sql, 'categoria') !== false || strpos($sql, 'categorias') !== false) {
             $datos = [
                 ['id_categoria' => 1, 'nombre' => 'Granos', 'descripcion' => 'Productos de granos y cereales'],
@@ -32,43 +32,23 @@ class ConectorUniversal {
                 ['id_categoria' => 4, 'nombre' => 'Lacteos', 'descripcion' => 'Productos derivados de la leche']
             ];
         }
-        // 3. CONDICIONAL PARA EL MÓDULO DE CLIENTES
         elseif (strpos($sql, 'cliente') !== false) {
             $datos = [[
                 'id_cliente' => 1, 'dni' => '10245678', 'nombre' => 'Carlos Alberto Mendoza', 
                 'telefono' => '3157654321', 'direccion' => 'Calle 15 #24-50'
             ]];
         } 
-        // 4. CONDICIONAL PARA EL MÓDULO DE PROVEEDORES
         elseif (strpos($sql, 'proveedor') !== false) {
-            $datos = [[
-                'id_proveedor' => 1, 'nit' => '900111222-1', 'nombre' => 'Distribuidora ABC', 
-                'telefono' => '3001234567', 'direccion' => 'Zona Comercial Central'
-            ]];
+            $datos = [
+                ['id_proveedor' => 1, 'nit' => '900111222-1', 'nombre' => 'Distribuidora ABC', 'telefono' => '3001234567', 'direccion' => 'Zona Comercial Central'],
+                ['id_proveedor' => 2, 'nit' => '900333444-2', 'nombre' => 'Proveedor XYZ', 'telefono' => '3109876543', 'direccion' => 'Avenida Principal #40']
+            ];
         } 
-        // 5. CONDICIONAL PARA VENTAS Y REPORTES
-         elseif (strpos($sql, 'sum(case') !== false) {
-            $datos = [['ingresos' => 1450000.00, 'egresos' => 350000.00]];
-        }
         else {
             $datos = [
-                ['id_detalle' => 1, 'fecha' => date('Y-m-d'), 'descripcion' => 'Venta de mercancía - Factura 001', 'tipo' => 'Debito', 'valor' => 1200000.00],
-                ['id_detalle' => 2, 'fecha' => date('Y-m-d'), 'descripcion' => 'Pago a Proveedor Alpina', 'tipo' => 'Credito', 'valor' => 350000.00],
-                ['id_detalle' => 3, 'fecha' => date('Y-m-d'), 'descripcion' => 'Venta de abarrotes - Contado', 'tipo' => 'Debito', 'valor' => 250000.00]
+                ['id_detalle' => 1, 'fecha' => date('Y-m-d'), 'descripcion' => 'Venta de mercancía - Factura 001', 'tipo' => 'Debito', 'valor' => 1200000.00, 'id_asiento' => 1, 'ingresos' => 1450000.00, 'egresos' => 350000.00],
+                ['id_detalle' => 2, 'fecha' => date('Y-m-d'), 'descripcion' => 'Pago a Proveedor Alpina', 'tipo' => 'Credito', 'valor' => 350000.00, 'id_asiento' => 2, 'ingresos' => 1450000.00, 'egresos' => 350000.00]
             ];
-        }
-
-
-
-        if (strpos($sql, 'cuentas_contables') !== false) {
-            $datos = [
-                ['id_cuenta' => 1, 'nombre' => 'Caja', 'tipo' => 'Activo'],
-                ['id_cuenta' => 2, 'nombre' => 'Ventas', 'tipo' => 'Ingreso'],
-                ['id_cuenta' => 3, 'nombre' => 'Compras', 'tipo' => 'Gasto']
-            ];
-        }
-        else {
-            $datos = [['id' => 1, 'nombre' => 'General']];
         }
 
         return new class($datos) {
@@ -95,6 +75,7 @@ class ConectorUniversal {
 
 $conexion = new ConectorUniversal();
 ?>
+
 
 
 
