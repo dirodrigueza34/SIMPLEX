@@ -117,66 +117,167 @@ $resultado = $conexion->query("SELECT * FROM proveedor ORDER BY id_proveedor DES
             </tbody>
         </table>
     </div>
+
+
 <script>
-// Base de Datos Virtual con Estética Idéntica y Consecutivo Corregido
-document.addEventListener("DOMContentLoaded", function() {
-    const tabla = document.querySelector("table tbody") || document.querySelector("table");
     
-    document.querySelector('form').addEventListener('submit', function(e) {
+document.addEventListener("DOMContentLoaded", function() {
+    const tabla = document.querySelector("table tbody") || document.querySelector(".tabla-datos tbody") || document.querySelector("table");
+    const formulario = document.querySelector('form');
+    const botonGuardar = formulario.querySelector('button[type="submit"]') || formulario.querySelector('.btn-guardar') || formulario.querySelector('button');
+    
+    let filaEditando = null;
+
+    function cargarProveedoresLocales() {
+        if(tabla) tabla.innerHTML = "";
+        
+        const proveedoresBase = [
+            { id_proveedor: 1, nit: '900111222-1', nombre: 'Distribuidora ABC', telefono: '3001234567' },
+            { id_proveedor: 2, nit: '900333444-2', nombre: 'Proveedor XYZ', telefono: '3109876543' },
+            { id_proveedor: 3, nit: '860003020-1', nombre: 'Alpina', telefono: '1235058' },
+            { id_proveedor: 4, nit: '890900608-9', nombre: 'ALKOSTO', telefono: '3175318215' },
+            { id_proveedor: 5, nit: '901222333-6', nombre: 'Distribuidora de Alimentos del Valle', telefono: '6024445566' },
+            { id_proveedor: 6, nit: '901444555-7', nombre: 'Distribuidora de Alimentos la Muñeca', telefono: '6023332241' }
+        ];
+
+        let proveedoresGuardados = JSON.parse(localStorage.getItem('proveedores_final_losprados'));
+        
+        if (!proveedoresGuardados || proveedoresGuardados.length === 0) {
+            proveedoresGuardados = proveedoresBase;
+            localStorage.setItem('proveedores_final_losprados', JSON.stringify(proveedoresGuardados));
+        }
+
+        proveedoresGuardados.forEach((prov, index) => {
+            const nuevoId = index + 1;
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td>${nuevoId}</td>
+                <td>${prov.nit}</td>
+                <td>${prov.nombre}</td>
+                <td>${prov.telefono}</td>
+                <td>
+                    <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
+                    <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
+                </td>
+            `;
+            tabla.appendChild(nuevaFila);
+        });
+        asignarAccionesProveedores();
+    }
+
+    function guardarEnDiscoVirtual() {
+        const filas = tabla.querySelectorAll('tr');
+        const listaProveedores = [];
+        filas.forEach(fila => {
+            if(fila.cells.length >= 4) {
+                listaProveedores.push({
+                    id_proveedor: fila.cells[0].textContent.trim(),
+                    nit: fila.cells[1].textContent.trim(),
+                    nombre: fila.cells[2].textContent.trim(),
+                    telefono: fila.cells[3].textContent.trim()
+                });
+            }
+        });
+        localStorage.setItem('proveedores_final_losprados', JSON.stringify(listaProveedores));
+    }
+
+    formulario.addEventListener('submit', function(e) {
         e.preventDefault();
+        e.stopPropagation();
         
-        // Jala las cajas de texto exactas
-        const inputNombre = document.querySelector('form input[placeholder*="ABC"]') || document.querySelector('form input[name*="nombre"]');
-        const inputTelefono = document.querySelector('form input[placeholder*="300"]') || document.querySelector('form input[name*="telefono"]');
+        const inputs = formulario.querySelectorAll('input[type="text"], input[type="number"], input[type="tel"]');
+        const inputsFiltrados = Array.from(inputs).filter(inp => inp.name !== 'accion' && inp.type !== 'hidden');
         
-        let nombre = inputNombre ? inputNombre.value : '';
-        let telefono = inputTelefono ? inputTelefono.value : '';
+        let nit = inputsFiltrados[0] ? inputsFiltrados[0].value.trim() : '';
+        let nombre = inputsFiltrados[1] ? inputsFiltrados[1].value.trim() : '';
+        let telefono = inputsFiltrados[2] ? inputsFiltrados[2].value.trim() : '';
         
-        if (nombre.trim() === "" || telefono.trim() === "") {
-            alert('Por favor, complete los campos obligatorios del proveedor.');
+        if (nit === "" || nombre === "") {
+            alert('Por favor, complete los campos requeridos.');
             return;
         }
+
+        if (filaEditando) {
+            filaEditando.cells[1].textContent = nit;
+            filaEditando.cells[2].textContent = nombre;
+            filaEditando.cells[3].textContent = telefono;
+            
+            alert('¡Sprint Scrum Exitoso! El proveedor "' + nombre + '" ha sido modificado y actualizado.');
+            botonGuardar.textContent = 'Guardar';
+            botonGuardar.style.backgroundColor = ''; 
+            filaEditando = null;
+        } else {
+            const totalFilas = tabla.querySelectorAll('tr').length;
+            const nuevoId = totalFilas + 1;
+            
+            const nuevaFila = document.createElement('tr');
+            nuevaFila.innerHTML = `
+                <td>${nuevoId}</td>
+                <td>${nit}</td>
+                <td>${nombre}</td>
+                <td>${telefono}</td>
+                <td>
+                    <a href="#" class="btn btn-warning btn-sm btn-editar" style="color: #fff; font-weight: bold; background-color: #ff9800; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none; margin-right: 5px;">Editar</a>
+                    <a href="#" class="btn btn-danger btn-sm btn-borrar" style="color: #fff; font-weight: bold; background-color: #f44336; border: none; padding: 5px 10px; border-radius: 4px; text-decoration: none;">Borrar</a>
+                </td>
+            `;
+            tabla.appendChild(nuevaFila);
+            alert('¡Sprint Scrum Exitoso! El proveedor "' + nombre + '" ha sido registrado.');
+        }
         
-        // CORRECCIÓN DEL CONSECUTIVO: Cuenta las filas de datos reales de la tabla
-        const totalFilas = document.querySelectorAll('table tr').length;
-        const nuevoId = totalFilas; 
-        
-        // Inyecta la nueva fila manteniendo la estética exacta de tus etiquetas CSS
-        const nuevaFila = document.createElement('tr');
-        nuevaFila.innerHTML = `
-            <td>${nuevoId}</td>
-            <td>${nombre}</td>
-            <td>${telefono}</td>
-            <td>
-                <a href="#" class="btn btn-warning btn-sm" style="color: #fff; font-weight: bold;">Editar</a>
-                <a href="#" class="btn btn-danger btn-sm" style="color: #fff; font-weight: bold;">Borrar</a>
-            </td>
-        `;
-        
-        tabla.appendChild(nuevaFila);
-        alert('¡Sprint Scrum Exitoso! El proveedor "' + nombre + '" ha sido guardado correctamente.');
-        document.querySelector('form').reset();
-        asignarAccionesBotones();
+        guardarEnDiscoVirtual();
+        formulario.reset();
+        asignarAccionesProveedores();
     });
 
-    function asignarAccionesBotones() {
-        document.querySelectorAll('table .btn-warning, table .btn-danger').forEach(boton => {
+    function asignarAccionesProveedores() {
+        document.querySelectorAll('table .btn-editar').forEach(boton => {
             boton.onclick = function(e) {
                 e.preventDefault();
-                if (this.textContent.includes('Editar')) {
-                    alert('Mantenimiento del Sistema: Cargando datos del proveedor seleccionado para edición.');
-                } else if (this.textContent.includes('Borrar')) {
-                    if (confirm('¿Está seguro de eliminar este proveedor de la lista registrada?')) {
-                        this.closest('tr').remove();
-                        alert('Registro eliminado de la tabla horizontal con éxito.');
-                    }
+                e.stopPropagation();
+                filaEditando = this.closest('tr');
+                
+                const inputs = formulario.querySelectorAll('input[type="text"], input[type="number"], input[type="tel"]');
+                const inputsFiltrados = Array.from(inputs).filter(inp => inp.name !== 'accion' && inp.type !== 'hidden');
+                
+                if(inputsFiltrados[0]) inputsFiltrados[0].value = filaEditando.cells[1].textContent.trim();
+                if(inputsFiltrados[1]) inputsFiltrados[1].value = filaEditando.cells[2].textContent.trim();
+                if(inputsFiltrados[2]) inputsFiltrados[2].value = filaEditando.cells[3].textContent.trim();
+                
+                botonGuardar.textContent = 'Actualizar Proveedor';
+                botonGuardar.style.backgroundColor = '#ff9800';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+        });
+
+        document.querySelectorAll('table .btn-borrar').forEach(boton => {
+            boton.onclick = function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (confirm('¿Está seguro de eliminar este proveedor?')) {
+                    this.closest('tr').remove();
+                    guardarEnDiscoVirtual();
+                    alert('Registro eliminado con éxito.');
+                    formulario.reset();
+                    botonGuardar.textContent = 'Guardar';
+                    botonGuardar.style.backgroundColor = '';
+                    filaEditando = null;
+                    
+                    const filasRestantes = tabla.querySelectorAll('tr');
+                    filasRestantes.forEach((f, idx) => {
+                        f.cells[0].textContent = idx + 1;
+                    });
+                    guardarEnDiscoVirtual();
                 }
             };
         });
     }
-    asignarAccionesBotones();
+
+    localStorage.removeItem('proveedores_organizados_losprados');
+    cargarProveedoresLocales();
 });
 </script>
+
 
 </body>
 </html>
