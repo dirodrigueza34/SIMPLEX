@@ -89,13 +89,14 @@ $resultado = $conexion->query("SELECT * FROM proveedor ORDER BY id_proveedor DES
     
         <table class="tabla-datos">
             <thead>
-                <tr>
-                    <th style="width: 15%;">ID</th>
-                    <th style="width: 45%;">Nombre</th>
-                    <th style="width: 25%;">Teléfono</th>
-                    <th style="width: 15%;">Acciones</th>
-                </tr>
-            </thead>
+    <tr>
+        <th>ID</th>
+        <th>NIT</th>
+        <th>Nombre</th>
+        <th>Teléfono</th>
+        <th>Acciones</th>
+    </tr>
+</thead>
             <tbody>
                 <?php
                 if ($resultado && $resultado->num_rows > 0) {
@@ -120,6 +121,7 @@ $resultado = $conexion->query("SELECT * FROM proveedor ORDER BY id_proveedor DES
 
 
 <script>
+
     
 document.addEventListener("DOMContentLoaded", function() {
     const tabla = document.querySelector("table tbody") || document.querySelector(".tabla-datos tbody") || document.querySelector("table");
@@ -171,9 +173,9 @@ document.addEventListener("DOMContentLoaded", function() {
         filas.forEach(fila => {
             if(fila.cells.length >= 4) {
                 listaProveedores.push({
-                    nit: fila.cells.textContent.trim(),
-                    nombre: fila.cells.textContent.trim(),
-                    telefono: fila.cells.textContent.trim()
+                    nit: fila.cells[1].textContent.trim(),
+                    nombre: fila.cells[2].textContent.trim(),
+                    telefono: fila.cells[3].textContent.trim()
                 });
             }
         });
@@ -196,10 +198,8 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         if (filaEditando) {
-            let nitExistente = filaEditando.cells.textContent.trim();
-            filaEditando.cells.textContent = nitExistente;
-            filaEditando.cells.textContent = nombre;
-            filaEditando.cells.textContent = telefono;
+            filaEditando.cells[2].textContent = nombre;
+            filaEditando.cells[3].textContent = telefono;
             
             alert('¡Sprint Scrum Exitoso! El proveedor "' + nombre + '" ha sido modificado y actualizado.');
             botonGuardar.textContent = 'Guardar';
@@ -240,7 +240,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 const txtNombre = formulario.querySelector('input[placeholder*="ABC"]') || formulario.querySelector('input[type="text"]');
                 const txtTelefono = formulario.querySelector('input[placeholder*="300"]') || formulario.querySelector('input[type="number"]') || formulario.querySelector('input[type="tel"]');
                 
-                if(txtNombre) txtNombre.value = filaEditando.cells.textContent.trim();
+                if(txtNombre) txtNombre.value = filaEditando.cells[2].textContent.trim();
                 if(txtTelefono) txtTelefono.value = filaEditando.cells.textContent.trim();
                 
                 botonGuardar.textContent = 'Actualizar Proveedor';
@@ -258,13 +258,13 @@ document.addEventListener("DOMContentLoaded", function() {
                     guardarEnDiscoVirtual();
                     alert('Registro eliminado de la tabla horizontal con éxito.');
                     formulario.reset();
-                    botonGuardar.textContent = 'Keep';
+                    botonGuardar.textContent = 'Guardar';
                     botonGuardar.style.backgroundColor = '';
                     filaEditando = null;
                     
                     const filasRestantes = tabla.querySelectorAll('tr');
                     filasRestantes.forEach((f, idx) => {
-                        f.cells.textContent = idx + 1;
+                        f.cells[0].textContent = idx + 1;
                     });
                     guardarEnDiscoVirtual();
                 }
@@ -272,7 +272,8 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    localStorage.removeItem('proveedores_estrictos_losprados');
+
+
     cargarProveedoresLocales();
 });
 </script>
