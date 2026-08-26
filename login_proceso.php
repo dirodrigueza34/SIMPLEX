@@ -1,22 +1,18 @@
 <?php
-include "conexion.php";
+// Se capturan los datos enviados de forma segura
+$user = isset($_POST['usuario']) ? trim($_POST['usuario']) : '';
+$pass = isset($_POST['contrasena']) ? trim($_POST['contrasena']) : '';
 
-$usuario = isset($_POST['usuario']) ? trim($_POST['usuario']) : '';
-$contrasena = isset($_POST['contrasena']) ? trim($_POST['contrasena']) : '';
-
-if (empty($usuario) || empty($contrasena)) {
-    header("Location: login.php?error=campos_vacios");
-    exit();
-}
-
-if (($usuario === 'MAGVD12' && $contrasena === 'cali123') || ($usuario === 'Andres1' && $contrasena === 'simplex2026')) {
-    session_start();
-    $_SESSION['usuario'] = $usuario;
-    header("Location: index.php");
+// Credenciales base de prueba según tu captura (Usuario: MAGVD12)
+if ($user === "MAGVD12" && $pass === "cali123") {
+    // Si es correcto, redirige al menú general de la aplicación (productos.php)
+    header("Location: productos.php");
     exit();
 } else {
-    header("Location: login.php?error=datos_incorrectos");
+    // Si falla, devuelve a la pantalla inicial informando el error de validación
+    header("Location: index.php?error=invalido");
     exit();
 }
 ?>
+
 
