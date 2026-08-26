@@ -132,19 +132,19 @@ document.addEventListener("DOMContentLoaded", function() {
         if(tabla) tabla.innerHTML = "";
         
         const proveedoresBase = [
-            { id_proveedor: 1, nit: '900111222-1', nombre: 'Distribuidora ABC', telefono: '3001234567' },
-            { id_proveedor: 2, nit: '900333444-2', nombre: 'Proveedor XYZ', telefono: '3109876543' },
-            { id_proveedor: 3, nit: '860003020-1', nombre: 'Alpina', telefono: '1235058' },
-            { id_proveedor: 4, nit: '890900608-9', nombre: 'ALKOSTO', telefono: '3175318215' },
-            { id_proveedor: 5, nit: '901222333-6', nombre: 'Distribuidora de Alimentos del Valle', telefono: '6024445566' },
-            { id_proveedor: 6, nit: '901444555-7', nombre: 'Distribuidora de Alimentos la Muñeca', telefono: '6023332241' }
+            { nit: '900111222-1', nombre: 'Distribuidora ABC', telefono: '3001234567' },
+            { nit: '900333444-2', nombre: 'Proveedor XYZ', telefono: '3109876543' },
+            { nit: '860003020-1', nombre: 'Alpina', telefono: '1235058' },
+            { nit: '890900608-9', nombre: 'ALKOSTO', telefono: '3175318215' },
+            { nit: '901222333-6', nombre: 'Distribuidora de Alimentos del Valle', telefono: '6024445566' },
+            { nit: '901444555-7', nombre: 'Distribuidora de Alimentos la Muñeca', telefono: '6023332241' }
         ];
 
-        let proveedoresGuardados = JSON.parse(localStorage.getItem('proveedores_final_losprados'));
+        let proveedoresGuardados = JSON.parse(localStorage.getItem('proveedores_simetricos_losprados'));
         
         if (!proveedoresGuardados || proveedoresGuardados.length === 0) {
             proveedoresGuardados = proveedoresBase;
-            localStorage.setItem('proveedores_final_losprados', JSON.stringify(proveedoresGuardados));
+            localStorage.setItem('proveedores_simetricos_losprados', JSON.stringify(proveedoresGuardados));
         }
 
         proveedoresGuardados.forEach((prov, index) => {
@@ -171,36 +171,35 @@ document.addEventListener("DOMContentLoaded", function() {
         filas.forEach(fila => {
             if(fila.cells.length >= 4) {
                 listaProveedores.push({
-                    id_proveedor: fila.cells[0].textContent.trim(),
-                    nit: fila.cells[1].textContent.trim(),
-                    nombre: fila.cells[2].textContent.trim(),
-                    telefono: fila.cells[3].textContent.trim()
+                    nit: fila.cells.textContent.trim(),
+                    nombre: fila.cells.textContent.trim(),
+                    telefono: fila.cells.textContent.trim()
                 });
             }
         });
-        localStorage.setItem('proveedores_final_losprados', JSON.stringify(listaProveedores));
+        localStorage.setItem('proveedores_simetricos_losprados', JSON.stringify(listaProveedores));
     }
 
     formulario.addEventListener('submit', function(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        const inputs = formulario.querySelectorAll('input[type="text"], input[type="number"], input[type="tel"]');
-        const inputsFiltrados = Array.from(inputs).filter(inp => inp.name !== 'accion' && inp.type !== 'hidden');
+        const txtNombre = formulario.querySelector('input[placeholder*="ABC"]') || formulario.querySelector('input[type="text"]');
+        const txtTelefono = formulario.querySelector('input[placeholder*="300"]') || formulario.querySelector('input[type="number"]') || formulario.querySelector('input[type="tel"]');
         
-        let nit = inputsFiltrados[0] ? inputsFiltrados[0].value.trim() : '';
-        let nombre = inputsFiltrados[1] ? inputsFiltrados[1].value.trim() : '';
-        let telefono = inputsFiltrados[2] ? inputsFiltrados[2].value.trim() : '';
+        let nombre = txtNombre ? txtNombre.value.trim() : '';
+        let telefono = txtTelefono ? txtTelefono.value.trim() : '';
         
-        if (nit === "" || nombre === "") {
-            alert('Por favor, complete los campos requeridos.');
+        if (nombre === "" || telefono === "") {
+            alert('Por favor, complete todos los campos.');
             return;
         }
 
         if (filaEditando) {
-            filaEditando.cells[1].textContent = nit;
-            filaEditando.cells[2].textContent = nombre;
-            filaEditando.cells[3].textContent = telefono;
+            let nitExistente = filaEditando.cells.textContent.trim();
+            filaEditando.cells.textContent = nitExistente;
+            filaEditando.cells.textContent = nombre;
+            filaEditando.cells.textContent = telefono;
             
             alert('¡Sprint Scrum Exitoso! El proveedor "' + nombre + '" ha sido modificado y actualizado.');
             botonGuardar.textContent = 'Guardar';
@@ -209,11 +208,12 @@ document.addEventListener("DOMContentLoaded", function() {
         } else {
             const totalFilas = tabla.querySelectorAll('tr').length;
             const nuevoId = totalFilas + 1;
+            const nitGenerado = "901" + Math.floor(100000 + Math.random() * 900000) + "-" + nuevoId;
             
             const nuevaFila = document.createElement('tr');
             nuevaFila.innerHTML = `
                 <td>${nuevoId}</td>
-                <td>${nit}</td>
+                <td>${nitGenerado}</td>
                 <td>${nombre}</td>
                 <td>${telefono}</td>
                 <td>
@@ -237,12 +237,11 @@ document.addEventListener("DOMContentLoaded", function() {
                 e.stopPropagation();
                 filaEditando = this.closest('tr');
                 
-                const inputs = formulario.querySelectorAll('input[type="text"], input[type="number"], input[type="tel"]');
-                const inputsFiltrados = Array.from(inputs).filter(inp => inp.name !== 'accion' && inp.type !== 'hidden');
+                const txtNombre = formulario.querySelector('input[placeholder*="ABC"]') || formulario.querySelector('input[type="text"]');
+                const txtTelefono = formulario.querySelector('input[placeholder*="300"]') || formulario.querySelector('input[type="number"]') || formulario.querySelector('input[type="tel"]');
                 
-                if(inputsFiltrados[0]) inputsFiltrados[0].value = filaEditando.cells[1].textContent.trim();
-                if(inputsFiltrados[1]) inputsFiltrados[1].value = filaEditando.cells[2].textContent.trim();
-                if(inputsFiltrados[2]) inputsFiltrados[2].value = filaEditando.cells[3].textContent.trim();
+                if(txtNombre) txtNombre.value = filaEditando.cells.textContent.trim();
+                if(txtTelefono) txtTelefono.value = filaEditando.cells.textContent.trim();
                 
                 botonGuardar.textContent = 'Actualizar Proveedor';
                 botonGuardar.style.backgroundColor = '#ff9800';
@@ -254,18 +253,18 @@ document.addEventListener("DOMContentLoaded", function() {
             boton.onclick = function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                if (confirm('¿Está seguro de eliminar este proveedor?')) {
+                if (confirm('¿Está seguro de eliminar este proveedor de la lista registrada de la tienda?')) {
                     this.closest('tr').remove();
                     guardarEnDiscoVirtual();
-                    alert('Registro eliminado con éxito.');
+                    alert('Registro eliminado de la tabla horizontal con éxito.');
                     formulario.reset();
-                    botonGuardar.textContent = 'Guardar';
+                    botonGuardar.textContent = 'Keep';
                     botonGuardar.style.backgroundColor = '';
                     filaEditando = null;
                     
                     const filasRestantes = tabla.querySelectorAll('tr');
                     filasRestantes.forEach((f, idx) => {
-                        f.cells[0].textContent = idx + 1;
+                        f.cells.textContent = idx + 1;
                     });
                     guardarEnDiscoVirtual();
                 }
@@ -273,7 +272,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
-    localStorage.removeItem('proveedores_organizados_losprados');
+    localStorage.removeItem('proveedores_estrictos_losprados');
     cargarProveedoresLocales();
 });
 </script>
