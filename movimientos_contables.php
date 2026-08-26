@@ -81,7 +81,7 @@ $stockBajoCount = 1;
 
     <div class="content-box">
         <h2>Panel de Control y Analítica del Inventario</h2>
-        <p style="color: #666; margin-top: -10px;">Consolidado métrico del stock, rotación de mercancía y rendimiento de la Tienda Los Prados.</p>
+        <p style="color: #666; margin-top: -10px;">Consolidado métrico del stock, rotación de mercancía y rendimiento de la Tienda Los Prados Express.</p>
 
         <div class="grid-tarjetas">
             <div class="tarjeta-analitica">
