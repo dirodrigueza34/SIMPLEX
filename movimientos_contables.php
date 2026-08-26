@@ -1,81 +1,73 @@
 <?php
 include "conexion.php";
 
-// 1. CÁLCULO ARITMÉCO DEL SALDO NETO EN CAJA MENOR (Cuenta ID = 1)
-$sqlSaldo = "SELECT 
-                SUM(CASE WHEN tipo = 'Debito' THEN valor ELSE 0 END) as ingresos,
-                SUM(CASE WHEN tipo = 'Credito' THEN valor ELSE 0 END) as egresos
-             FROM detalle_movimiento WHERE id_cuenta = 1";
-$resSaldo = $conexion->query($sqlSaldo);
-$saldoCajaMenor = 0.00;
-
-if ($resSaldo && $fila = $resSaldo->fetch_assoc()) {
-    // Saldo neto = Ingresos por ventas menos Egresos por compras o gastos
-    $saldoCajaMenor = (float)$fila['ingresos'] - (float)$fila['egresos'];
-}
-
-// 2. CONSULTA DEL HISTORIAL UNIFICANDO LOS ASIENTOS CONTABLES
-$sqlHistorial = "SELECT dm.id_detalle, mc.fecha, mc.descripcion, dm.tipo, dm.valor 
-                 FROM detalle_movimiento dm 
-                 INNER JOIN movimientos_contables mc ON dm.id_movimiento = mc.id_movimiento 
-                 WHERE dm.id_cuenta = 1 ORDER BY dm.id_detalle DESC";
-$resultado = $conexion->query($sqlHistorial);
+$totalExistencias = 104;
+$valorInventario = 690200.00;
+$stockBajoCount = 1;
 ?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reportes - SIMPLEX</title>
+    <title>Reportes Inventario - SIMPLEX</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-      
-        .card-saldo-azul {
-            background-color: #002b5c; 
-            color: white;
-            padding: 15px 20px;
+        .grid-tarjetas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .tarjeta-analitica {
+            background: white;
+            padding: 20px;
             border-radius: 6px;
-            display: inline-block;
-            min-width: 250px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-left: 5px solid #002b5c;
         }
-        .card-saldo-azul h4 {
+        .tarjeta-analitica.alerta {
+            border-left-color: #dc3545;
+        }
+        .tarjeta-analitica.exito {
+            border-left-color: #28a745;
+        }
+        .tarjeta-analitica h4 {
             margin: 0;
-            font-size: 11px;
+            font-size: 12px;
+            color: #666;
             text-transform: uppercase;
-            letter-spacing: 0.8px;
-            opacity: 0.9;
-            font-weight: bold;
         }
-        .card-saldo-azul .monto-grande {
-            font-size: 26px;
+        .tarjeta-analitica .valor {
+            font-size: 24px;
             font-weight: bold;
-            margin-top: 6px;
+            color: #333;
+            margin-top: 10px;
         }
-        
-       
-        .badge {
+        .seccion-reporte {
+            margin-bottom: 35px;
+            background: white;
+            padding: 20px;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .badge-status {
             padding: 4px 8px;
             border-radius: 4px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: bold;
-            display: inline-block;
+      
         }
-        .badge-debito {
-            background-color: #e2f0d9; 
-            color: #385723;
-        }
-        .badge-credito {
-            background-color: #fce4d6; 
-            color: #c65911;
-        }
+
+
+        .status-entrada { background: #e2f0d9; color: #385723; }
+        .status-salida { background: #fce4d6; color: #c65911; }
+        .status-ajuste { background: #fff2cc; color: #d6b13d; }
     </style>
 </head>
 <body>
 
-    
     <nav class="navbar">
-        <span class="nav-welcome">Panel de Reportes</span>
+        <span class="nav-welcome">Módulo de Reportes Estadísticos</span>
         <div class="nav-links">
             <a href="index.php">Inicio</a>
             <a href="productos.php">Productos</a>
@@ -88,104 +80,130 @@ $resultado = $conexion->query($sqlHistorial);
     </nav>
 
     <div class="content-box">
-<form id="formSimulacion" style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #e3e6f0;">
-    <input type="text" id="sim_desc" placeholder="Ej: Compra de Papelería" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px; width: 250px;" required>
-    <input type="number" id="sim_valor" placeholder="Valor $" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px; width: 120px;" required>
-    <select id="sim_tipo" style="padding: 6px; border: 1px solid #ccc; border-radius: 4px; margin-right: 10px;">
-        <option value="Credito">Compra (Egreso)</option>
-        <option value="Debito">Venta (Ingreso)</option>
-    </select>
-    <button type="submit" style="background-color: #002b5c; color: white; border: none; padding: 7px 15px; border-radius: 4px; cursor: pointer; font-weight: bold;">Registrar</button>
-</form>
+        <h2>Panel de Control y Analítica del Inventario</h2>
+        <p style="color: #666; margin-top: -10px;">Consolidado métrico del stock, rotación de mercancía y rendimiento de la Tienda Los Prados.</p>
 
+        <div class="grid-tarjetas">
+            <div class="tarjeta-analitica">
+                <h4>Existencias Actuales</h4>
+                <div class="valor"><?php echo $totalExistencias; ?> Unidades</div>
+            </div>
+            <div class="tarjeta-analitica exito">
+                <h4>Valor del Inventario</h4>
+                <div class="valor">$ <?php echo number_format($valorInventario, 2, ',', '.'); ?></div>
+            </div>
+            <div class="tarjeta-analitica alerta">
+                <h4>Productos con Stock Bajo</h4>
+                <div class="valor"><?php echo $stockBajoCount; ?> Crítico</div>
+            </div>
+        </div>
 
-        <h3>Historial de Flujo de Efectivo (Caja Menor)</h3>
-        
-        <!-- Tabla estructurada con tus columnas de arqueo de caja -->
-        <table class="tabla-datos">
-            <thead>
-                <tr>
-                    <th style="width: 12%;">ID Asiento</th>
-                    <th style="width: 15%;">Fecha</th>
-                    <th style="width: 40%;">Descripción</th>
-                    <th style="width: 18%;">Tipo de Registro</th>
-                    <th style="width: 15%;">Valor</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php
-                if ($resultado && $resultado->num_rows > 0) {
-                    while($fila = $resultado->fetch_assoc()) {
-                        $tipo = $fila['tipo'];
-                        // Definir el estilo de la etiqueta si es Débito o Crédito
-                        $badgeClass = (strcasecmp($tipo, 'Debito') == 0) ? 'badge-debito' : 'badge-credito';
-                        
-                        echo "<tr>";
-                        echo "<td><b>" . $fila['id_detalle'] . "</b></td>";
-                        echo "<td>" . $fila['fecha'] . "</td>";
-                        echo "<td>" . htmlspecialchars($fila['descripcion']) . "</td>";
-                        echo "<td><span class='badge $badgeClass'>" . htmlspecialchars($tipo) . "</span></td>";
-                        echo "<td>$ " . number_format($fila['valor'], 2, ',', '.') . "</td>";
-                        echo "</tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='5' style='text-align:center; color:#888; padding:20px;'>No se registran transacciones contables en el libro de caja.</td></tr>";
-                }
-                ?>
-            </tbody>
-        </table>
+        <div class="seccion-reporte">
+            <h3>1. Estado del Inventario y Alertas de Stock Bajo</h3>
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Producto</th>
+                        <th>Stock Actual</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="background:#fff5f5;">
+                        <td><b>P003</b></td>
+                        <td>Leche Alquería 1L</td>
+                        <td style="color:#dc3545; font-weight:bold;">2 Unidades</td>
+                        <td><span class="badge-status status-salida">Reabastecer</span></td>
+                    </tr>
+                    <tr>
+                        <td><b>P001</b></td>
+                        <td>Arroz Diana 1kg</td>
+                        <td>50 Unidades</td>
+                        <td><span class="badge-status status-entrada">Óptimo</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="seccion-reporte">
+            <h3>2. Movimientos de Mercancía (Kardex Historial de Ajustes)</h3>
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Producto</th>
+                        <th>Movimiento</th>
+                        <th>Cantidad</th>
+                        <th>Motivo / Detalle</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>2026-08-25</td>
+                        <td>Aceite Premier 1L</td>
+                        <td><span class="badge-status status-entrada">Entrada</span></td>
+                        <td>+12 Unidades</td>
+                        <td>Compra a Distribuidora ABC</td>
+                    </tr>
+                    <tr>
+                        <td>2026-08-25</td>
+                        <td>Arroz Diana 1kg</td>
+                        <td><span class="badge-status status-salida">Salida</span></td>
+                        <td>-5 Unidades</td>
+                        <td>Venta Diaria Factura 102</td>
+                    </tr>
+                    <tr>
+                        <td>2026-08-24</td>
+                        <td>Leche Alquería 1L</td>
+                        <td><span class="badge-status status-ajuste">Ajuste</span></td>
+                        <td>-1 Unidad</td>
+                        <td>Artículo Dañado / Avería</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="seccion-reporte">
+            <h3>3. Rendimiento de Ventas y Rotación por Categoría</h3>
+            <table class="tabla-datos">
+                <thead>
+                    <tr>
+                        <th>Categoría</th>
+                        <th>Producto Más Vendido</th>
+                        <th>Unidades Vendidas</th>
+                        <th>Nivel de Rotación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><b>Granos</b></td>
+                        <td>Arroz Diana 1kg</td>
+                        <td>85 Bolsas</td>
+                        <td style="color:#28a745; font-weight:bold;">Alta Rotación</td>
+                    </tr>
+                    <tr>
+                        <td><b>Lácteos</b></td>
+                        <td>Leche Alquería 1L</td>
+                        <td>42 Unidades</td>
+                        <td style="color:#ff9800; font-weight:bold;">Media Rotación</td>
+                    </tr>
+                    <tr>
+                        <td><b>Aseo</b></td>
+                        <td>Detergente Líquido</td>
+                        <td>0 Unidades</td>
+                        <td style="color:#dc3545; font-weight:bold;">Sin Movimiento</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
     </div>
-<script>
-document.addEventListener("DOMContentLoaded", function() {
-    const formulario = document.getElementById('formSimulacion');
-    const tabla = document.querySelector(".tabla-datos tbody");
-    const contenedorSaldo = document.querySelector(".monto-grande") || document.querySelector(".card-saldo-azul div");
 
-    if (formulario && tabla && contenedorSaldo) {
-        formulario.addEventListener('submit', function(e) {
-            e.preventDefault();
-            e.stopPropagation();
 
-            const desc = document.getElementById('sim_desc').value;
-            const valor = parseFloat(document.getElementById('sim_valor').value);
-            const tipo = document.getElementById('sim_tipo').value;
-
-            let textoSaldo = contenedorSaldo.textContent.replace('$', '').replace('COP', '').trim();
-            textoSaldo = textoSaldo.replace(/\./g, '').replace(',', '.');
-            let saldoActual = parseFloat(textoSaldo);
-
-            if (isNaN(saldoActual)) saldoActual = 0;
-
-            if (tipo === 'Credito') {
-                saldoActual -= valor;
-            } else {
-                saldoActual += valor;
-            }
-
-            contenedorSaldo.textContent = "$ " + saldoActual.toLocaleString('co', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + " COP";
-
-            const totalFilas = tabla.querySelectorAll('tr').length;
-            const nuevoId = totalFilas + 1;
-            const badgeClass = (tipo === 'Debito') ? 'badge-debito' : 'badge-credito';
-
-            const nuevaFila = document.createElement('tr');
-            nuevaFila.innerHTML = `
-                <td><b>${nuevoId}</b></td>
-                <td>${new Date().toISOString().split('T')[0]}</td>
-                <td>${desc}</td>
-                <td><span class="badge ${badgeClass}">${tipo}</span></td>
-                <td>$ ${valor.toLocaleString('co', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
-            `;
-
-            tabla.insertBefore(nuevaFila, tabla.firstChild);
-            alert('Procesado correctamente.');
-            formulario.reset();
-        });
-    }
-});
-</script>
 
 
 </body>
 </html>
+
 
