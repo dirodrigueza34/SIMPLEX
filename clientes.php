@@ -65,6 +65,10 @@ $resultado = $conexion->query("SELECT * FROM clientes ORDER BY nombre ASC");
 
    
     <nav class="navbar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="logo.png" alt="Logo Simplex" style="height: 40px; width: auto; border-radius: 4px;">
+        <span class="nav-welcome">SIMPLEX SOFTWARE</span>
+    </div>
         <span class="nav-welcome">Módulo de Clientes</span>
         <div class="nav-links">
             <a href="index.php">Inicio</a>

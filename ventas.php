@@ -75,6 +75,10 @@ $resultado = $conexion->query($sqlHistorial);
 
    
     <nav class="navbar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="logo.png" alt="Logo Simplex" style="height: 40px; width: auto; border-radius: 4px;">
+        <span class="nav-welcome">SIMPLEX SOFTWARE</span>
+    </div>
         <span class="nav-welcome">Panel de Reportes</span>
         <div class="nav-links">
             <a href="index.php">Inicio</a>

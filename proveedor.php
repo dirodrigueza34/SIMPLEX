@@ -50,6 +50,10 @@ $resultado = $conexion->query("SELECT * FROM proveedor ORDER BY id_proveedor DES
 
    
     <nav class="navbar">
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="logo.png" alt="Logo Simplex" style="height: 40px; width: auto; border-radius: 4px;">
+        <span class="nav-welcome">SIMPLEX SOFTWARE</span>
+    </div>
         <span class="nav-welcome">Módulo de Proveedores</span>
         <div class="nav-links">
             <a href="index.php">Inicio</a>
@@ -122,7 +126,7 @@ $resultado = $conexion->query("SELECT * FROM proveedor ORDER BY id_proveedor DES
 
 <script>
 
-    
+
 document.addEventListener("DOMContentLoaded", function() {
     const tabla = document.querySelector("table tbody") || document.querySelector(".tabla-datos tbody") || document.querySelector("table");
     const formulario = document.querySelector('form');
