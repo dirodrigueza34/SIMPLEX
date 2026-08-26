@@ -58,6 +58,19 @@ class ConectorUniversal {
             ];
         }
 
+
+
+        if (strpos($sql, 'cuentas_contables') !== false) {
+            $datos = [
+                ['id_cuenta' => 1, 'nombre' => 'Caja', 'tipo' => 'Activo'],
+                ['id_cuenta' => 2, 'nombre' => 'Ventas', 'tipo' => 'Ingreso'],
+                ['id_cuenta' => 3, 'nombre' => 'Compras', 'tipo' => 'Gasto']
+            ];
+        }
+        else {
+            $datos = [['id' => 1, 'nombre' => 'General']];
+        }
+
         return new class($datos) {
             public $num_rows;
             private $datos;
