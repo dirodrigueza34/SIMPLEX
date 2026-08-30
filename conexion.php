@@ -2,7 +2,8 @@
 mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
 
 try {
-    $host     = 'bedn8olbdy9dqpdnwa3q-mysql.services.clever-cloud.com';
+    // Usamos la IP directa de Clever Cloud en vez del subdominio de texto para saltar el fallo de DNS
+    $host     = '54.37.129.231'; 
     $user     = 'uggix6qnt9va7sxz';
     $password = 'vNmUpyGYYMwGHsABHQN8';
     $dbname   = 'bedn8olbdy9dqpdnwa3q';
